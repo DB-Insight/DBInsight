@@ -1,0 +1,12 @@
+.container {
+  @apply flex h-full flex-1 flex-col p-5;
+  .title {
+    font-family: Monument-Bold;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 700;
+  }
+  .tabs {
+    @apply mt-4;
+  }
+}

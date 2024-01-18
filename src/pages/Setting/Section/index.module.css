@@ -1,0 +1,7 @@
+.container {
+  @apply flex w-[400px] flex-1 flex-col py-2;
+  .title {
+    font-family: Monument-Bold;
+    font-weight: 700;
+  }
+}

@@ -1,0 +1,13 @@
+.container {
+  @apply flex h-screen w-screen flex-1;
+  .menu {
+    @apply flex h-screen overflow-hidden;
+  }
+  .content {
+    @apply flex flex-1 overflow-hidden;
+    background-color: #171b26;
+    div[data-type="offscreen-wrapper"] {
+      @apply flex flex-1;
+    }
+  }
+}

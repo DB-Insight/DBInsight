@@ -1,0 +1,17 @@
+.container {
+  @apply flex h-full flex-1 flex-col p-5;
+  .title {
+    font-family: Monument-Bold;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 700;
+  }
+  .side {
+    @apply box-border h-full w-full overflow-y-auto;
+    background-color: #21252c;
+  }
+  .content {
+    @apply box-border h-full w-full overflow-y-auto;
+    background-color: #171b26;
+  }
+}
