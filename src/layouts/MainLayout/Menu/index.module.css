@@ -3,3 +3,10 @@
     background-color: hsl(var(--accent));
   }
 }
+
+.github {
+  @apply m-2 flex items-center justify-center rounded-full border p-2;
+  &:hover {
+    border-color: theme("colors.primary.DEFAULT");
+  }
+}

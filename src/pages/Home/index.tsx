@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import styles from "./index.module.css";
-import { PlusIcon, SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useReactive } from "ahooks";
+import { PlusIcon, SearchIcon } from "lucide-react";
+import styles from "./index.module.css";
 
 export default () => {
   const state = useReactive({
@@ -11,7 +11,7 @@ export default () => {
   return (
     <div className={styles.container}>
       <div className={styles.title}>Databases</div>
-      <div className="flex items-center justify-between py-2">
+      <div className="flex items-center justify-between py-4">
         <Button>
           <PlusIcon className="mr-1 h-4 w-4" />
           ADD DATABASE

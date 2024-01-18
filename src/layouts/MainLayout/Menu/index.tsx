@@ -1,7 +1,8 @@
 import menus from "@/menus";
-import { SlidersHorizontalIcon } from "lucide-react";
+import { GithubIcon, SlidersHorizontalIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./index.module.css";
+import { Separator } from "@/components/ui/separator";
 
 export default () => {
   const nav = useNavigate();
@@ -36,6 +37,16 @@ export default () => {
         >
           <SlidersHorizontalIcon className="h-4 w-4" />
         </div>
+        <div className="px-3 py-2">
+          <Separator />
+        </div>
+        <a
+          className={styles.github}
+          href="https://github.com/DB-Insight/DBInsight"
+          target="_blank"
+        >
+          <GithubIcon className="h-3 w-3" />
+        </a>
       </div>
     </div>
   );
