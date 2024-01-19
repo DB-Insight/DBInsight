@@ -6,7 +6,26 @@
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
+type IpcRequest = {
+  body: any;
+  headers: any;
+  method: string;
+  url: string;
+};
+
+type IpcResponse = {
+  body: any;
+  headers: any;
+  status: number;
+};
+
+interface IElectronAPI {
+  node: () => string;
+  chrome: () => string;
+  electron: () => string;
+  trpc: (req: IpcRequest) => Promise<IpcResponse>;
+}
+
 interface Window {
-  versions: any;
-  API: any;
+  API: IElectronAPI;
 }

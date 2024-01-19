@@ -14,6 +14,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </ThemeProvider>,
 );
 
-console.log("🎉 Node version", window.versions.node());
-console.log("🎉 Chrome version", window.versions.chrome());
-console.log("🎉 Electron version", window.versions.electron());
+console.log("🎉 Node version", window.API.node());
+console.log("🎉 Chrome version", window.API.chrome());
+console.log("🎉 Electron version", window.API.electron());

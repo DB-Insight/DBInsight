@@ -1,13 +1,20 @@
+import { trpc } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useReactive } from "ahooks";
 import { PlusIcon, SearchIcon } from "lucide-react";
+import { useEffect } from "react";
 import styles from "./index.module.css";
 
 export default () => {
   const state = useReactive({
     filter: "",
   });
+
+  useEffect(() => {
+    trpc.hello.query().then(console.log);
+  }, []);
+
   return (
     <div className={styles.container}>
       <div className={styles.title}>Databases</div>

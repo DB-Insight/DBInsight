@@ -1,11 +1,38 @@
 import AuthLayout from "@/layouts/AuthLayout";
+import Home from "@/pages/Home";
+import Setting from "@/pages/Setting";
+import { LayoutGridIcon, SlidersHorizontalIcon } from "lucide-react";
+import { ReactNode } from "react";
 import { createBrowserRouter, useRouteError } from "react-router-dom";
-import menus from "./menus.tsx";
 
 const ErrorBoundary = () => {
   const error: any = useRouteError();
   return error.message ?? "Unknown error";
 };
+
+interface MenuItem {
+  path: string;
+  name: string;
+  element: ReactNode;
+  icon: ReactNode;
+  hideInMenu?: boolean;
+}
+
+export const menus = [
+  {
+    path: "/",
+    name: "Home",
+    icon: <LayoutGridIcon className="h-4 w-4" />,
+    element: <Home />,
+  },
+  {
+    path: "/setting",
+    name: "Setting",
+    hideInMenu: true,
+    icon: <SlidersHorizontalIcon className="h-4 w-4" />,
+    element: <Setting />,
+  },
+] as MenuItem[];
 
 export default createBrowserRouter(
   [

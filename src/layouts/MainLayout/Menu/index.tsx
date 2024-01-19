@@ -1,4 +1,4 @@
-import menus from "@/menus";
+import { menus } from "@/router";
 import { GithubIcon, SlidersHorizontalIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./index.module.css";

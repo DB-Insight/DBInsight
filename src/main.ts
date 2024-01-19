@@ -1,12 +1,15 @@
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, ipcMain, shell } from "electron";
 import path from "path";
+import { createHTTPServer } from "@trpc/server/adapters/standalone";
+import { appRouter } from "./api";
+import { ipcRequestHandler } from "./api/server";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
-const createWindow = () => {
+const createWindow = async () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -30,6 +33,17 @@ const createWindow = () => {
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };
+  });
+
+  ipcMain.handle("trpc", (event, req: IpcRequest) => {
+    return ipcRequestHandler({
+      endpoint: "/trpc",
+      req,
+      router: appRouter,
+      createContext: async () => {
+        return {};
+      },
+    });
   });
 };
 
