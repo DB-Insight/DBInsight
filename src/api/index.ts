@@ -1,7 +1,3 @@
-import { publicProcedure, router } from "./server";
-
-export const appRouter = router({
-  hello: publicProcedure.query(() => `Hello!`),
-});
-
-export type AppRouter = typeof appRouter;
+export * from "./client";
+export * from "./routes";
+export * from "./server";

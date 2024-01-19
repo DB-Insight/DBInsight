@@ -1,9 +1,17 @@
-import { AnyRouter, inferRouterContext } from "@trpc/server";
+import { AnyRouter, initTRPC } from "@trpc/server";
 import { HTTPRequest, resolveHTTPResponse } from "@trpc/server/http";
-import { initTRPC } from "@trpc/server";
 import SuperJSON from "superjson";
+import Container from "typedi";
 
-const t = initTRPC.create({
+export async function createContextInner() {
+  return {
+    ioc: Container,
+  };
+}
+
+export type Context = Awaited<ReturnType<typeof createContextInner>>;
+
+const t = initTRPC.context<Context>().create({
   transformer: SuperJSON,
 });
 
@@ -16,12 +24,13 @@ export async function ipcRequestHandler<TRouter extends AnyRouter>(opts: {
   batching?: { enabled: boolean };
   onError?: (o: { error: Error; req: IpcRequest }) => void;
   endpoint: string;
-  createContext?: (params: {
-    req: IpcRequest;
-  }) => Promise<inferRouterContext<TRouter>>;
 }): Promise<IpcResponse> {
   const createContext = async () => {
-    return opts.createContext?.({ req: opts.req });
+    const contextInner = await createContextInner();
+    return {
+      ...contextInner,
+      req: opts.req,
+    };
   };
 
   // adding a fake "https://electron" to the URL so it can be parsed

@@ -1,6 +1,6 @@
 import { createTRPCProxyClient, httpLink } from "@trpc/client";
-import { AppRouter } from "./index";
 import SuperJSON from "superjson";
+import { AppRouter } from "./routes";
 
 export const trpc = createTRPCProxyClient<AppRouter>({
   links: [
