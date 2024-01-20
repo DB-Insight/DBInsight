@@ -38,7 +38,7 @@ export default () => {
           <SlidersHorizontalIcon className="h-4 w-4" />
         </div>
         <div className="px-3 py-2">
-          <Separator />
+          <Separator className="h-[2px]" />
         </div>
         <a
           className={styles.github}

@@ -4,6 +4,7 @@ import { useLocation, useOutlet } from "react-router-dom";
 import { Offscreen } from "react-stillness-component";
 import Menu from "./Menu";
 import styles from "./index.module.css";
+import { Toaster } from "@/components/ui/sonner";
 
 export default () => {
   const location = useLocation();
@@ -38,6 +39,7 @@ export default () => {
           </Offscreen>
         ))}
       </div>
+      <Toaster />
     </div>
   );
 };

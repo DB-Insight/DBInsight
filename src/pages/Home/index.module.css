@@ -1,17 +1,31 @@
 .container {
-  @apply flex h-full flex-1 flex-col p-5;
+  @apply flex h-full flex-1 flex-col overflow-y-auto p-4;
   .title {
     font-family: Monument-Bold;
     font-size: 1.5rem;
     line-height: 2rem;
     font-weight: 700;
   }
-  .side {
-    @apply box-border h-full w-full overflow-y-auto;
-    background-color: #21252c;
-  }
   .content {
-    @apply box-border h-full w-full overflow-y-auto;
-    background-color: #171b26;
+    @apply box-border h-full w-full p-2;
+    background-color: #21252c;
+    .list {
+      background-color: #21252c;
+    }
+    .main {
+      @apply relative flex h-full w-full flex-col overflow-hidden rounded-md p-2;
+      background-color: #171b26;
+      .form {
+        @apply flex flex-1 flex-col space-y-2 overflow-y-auto border border-primary px-6 py-4;
+        background-color: #21252c;
+        .title {
+          @apply mb-4 text-sm;
+          font-family: Monument-Regular;
+        }
+      }
+      .action {
+        @apply flex items-center justify-between py-2;
+      }
+    }
   }
 }

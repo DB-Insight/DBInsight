@@ -1,5 +1,5 @@
 .container {
-  @apply flex h-screen w-screen flex-1;
+  @apply flex h-screen w-screen flex-1 overflow-hidden;
   .menu {
     @apply flex h-screen overflow-hidden;
   }
