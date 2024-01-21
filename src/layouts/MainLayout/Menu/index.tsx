@@ -3,15 +3,22 @@ import { GithubIcon, SlidersHorizontalIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./index.module.css";
 import { Separator } from "@/components/ui/separator";
+import connectionModel from "@/models/connection.model";
+import { useSnapshot } from "valtio";
 
 export default () => {
   const nav = useNavigate();
   const location = useLocation();
+  const { target } = useSnapshot(connectionModel.state);
   return (
     <div className="box-border flex flex-col">
       <div className="flex flex-1 flex-col">
         {menus
-          .filter((item) => !item.hideInMenu)
+          .filter((item) => {
+            if (!!item.hideInNoTarget && !target) return false;
+            if (!item.hideInMenu) return true;
+            return false;
+          })
           .map((item) => (
             <div
               key={item.path}

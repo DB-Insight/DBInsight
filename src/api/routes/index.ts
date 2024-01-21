@@ -1,7 +1,9 @@
-import { publicProcedure, router } from "@/api/server";
+import { publicProcedure, router } from "@/api/core/server";
 import { DBFactory } from "@/api/services/db.factory";
+import { connectionRouter } from "./connection.router";
 
 export const appRouter = router({
+  connection: connectionRouter,
   hello: publicProcedure.query(async ({ ctx }) => {
     const factory = ctx.ioc.get(DBFactory);
     const mysql = await factory.create("mysql", {

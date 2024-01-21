@@ -1,9 +1,14 @@
 import AuthLayout from "@/layouts/AuthLayout";
 import Home from "@/pages/Home";
 import Setting from "@/pages/Setting";
-import { LayoutGridIcon, SlidersHorizontalIcon } from "lucide-react";
+import {
+  KanbanSquareIcon,
+  LayoutDashboardIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react";
 import { ReactNode } from "react";
 import { createBrowserRouter, useRouteError } from "react-router-dom";
+import Studio from "./pages/Studio";
 
 const ErrorBoundary = () => {
   const error: any = useRouteError();
@@ -16,14 +21,22 @@ interface MenuItem {
   element: ReactNode;
   icon: ReactNode;
   hideInMenu?: boolean;
+  hideInNoTarget?: boolean;
 }
 
 export const menus = [
   {
     path: "/",
     name: "Home",
-    icon: <LayoutGridIcon className="h-4 w-4" />,
+    icon: <LayoutDashboardIcon className="h-4 w-4" />,
     element: <Home />,
+  },
+  {
+    path: "/studio",
+    name: "Studio",
+    icon: <KanbanSquareIcon className="h-4 w-4" />,
+    element: <Studio />,
+    hideInNoTarget: true,
   },
   {
     path: "/setting",

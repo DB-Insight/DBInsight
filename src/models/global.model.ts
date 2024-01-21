@@ -1,12 +1,12 @@
 import { defer } from "react-router-dom";
 import { proxy } from "valtio";
-import dbModel from "./db.model";
+import connectionModel from "./connection.model";
 
 const state = proxy<{}>({});
 
 const actions = {
   load: async () => {
-    await dbModel.load();
+    await connectionModel.load();
     return defer({});
   },
 };

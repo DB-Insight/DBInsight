@@ -1,0 +1,38 @@
+.container {
+  @apply flex h-full flex-1 flex-col overflow-hidden p-4;
+  .title {
+    @apply flex items-center gap-1;
+    font-family: Monument-Bold;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 700;
+    .info {
+      @apply mt-4 box-border flex w-auto flex-col gap-1 text-sm;
+      font-family: Monument;
+      font-weight: 500;
+    }
+  }
+  .content {
+    @apply box-border h-full w-full;
+    .side {
+      @apply box-border h-full overflow-hidden pl-1 pr-2 pt-4;
+      .title {
+        @apply mt-4 text-xs text-gray-500;
+        font-family: Monument-Bold;
+      }
+      .list {
+        @apply flex h-full flex-1 flex-col overflow-y-auto overflow-x-hidden py-2;
+        .item {
+          @apply flex cursor-pointer items-center justify-start gap-1
+          rounded-md p-2 hover:bg-slate-700;
+          .name {
+            @apply line-clamp-1 inline-block text-ellipsis text-nowrap text-sm;
+          }
+        }
+      }
+    }
+    .main {
+      @apply mt-4 box-border pl-5 pr-1;
+    }
+  }
+}

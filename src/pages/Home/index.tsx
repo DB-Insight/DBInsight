@@ -1,3 +1,4 @@
+import { trpc } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -34,7 +35,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import dbModel, { Connection } from "@/models/db.model";
+import connectionModel, { Connection } from "@/models/connection.model";
+import { ConnectionSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ColumnDef,
@@ -55,8 +57,10 @@ import {
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
+  CopyIcon,
   FilePenLineIcon,
   PlusIcon,
+  RotateCwIcon,
   SearchIcon,
   Trash2Icon,
   XIcon,
@@ -64,63 +68,37 @@ import {
 import { nanoid } from "nanoid";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useCopyToClipboard } from "react-use";
 import { toast } from "sonner";
 import { useSnapshot } from "valtio";
 import * as z from "zod";
 import styles from "./index.module.css";
+import { useNavigate } from "react-router-dom";
 
 const DatabaseTypeMaps: Record<string, string> = {
   mysql: "MySQL",
 };
-
-const FormSchema = z.object({
-  type: z.enum(["mysql"], {
-    required_error: "Database Type is required",
-  }),
-  alias: z
-    .string({ required_error: "Connection Alias is required" })
-    .trim()
-    .min(1, { message: "Connection Alias is required" }),
-  host: z
-    .string({ required_error: "Host is required" })
-    .trim()
-    .min(1, { message: "Connection Host is required" }),
-  port: z
-    .string({ required_error: "Port is required" })
-    .trim()
-    .min(1, { message: "Connection Port is required" }),
-  username: z
-    .string({ required_error: "Username is required" })
-    .trim()
-    .min(1, { message: "Connection Username is required" }),
-  password: z
-    .string({ required_error: "Password is required" })
-    .trim()
-    .min(1, { message: "Connection Password is required" }),
-  database: z.string().optional(),
-});
-
 export default () => {
+  const [_, copyToClipboard] = useCopyToClipboard();
+  const nav = useNavigate();
   const state = useReactive<{
     visible: boolean;
-    submitting: boolean;
     testing: boolean;
     target: Connection | null;
   }>({
     visible: false,
-    submitting: false,
     testing: false,
     target: null,
   });
 
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof ConnectionSchema>>({
+    resolver: zodResolver(ConnectionSchema),
     defaultValues: {
       type: "mysql",
       alias: "",
       host: "",
       port: "3306",
-      username: "",
+      user: "",
       password: "",
       database: "",
     },
@@ -138,23 +116,32 @@ export default () => {
       form.reset();
     }
   }, [form, state.visible, state.target]);
-  const onSubmit = (
-    data: z.infer<typeof FormSchema>,
+  const onSubmit = async (
+    data: z.infer<typeof ConnectionSchema>,
     isTesting: boolean = false,
   ) => {
     try {
       if (isTesting) {
         state.testing = true;
+        const res = await trpc.connection.test.query({ ...data });
+        if (res.status) {
+          toast.success("Successfully connected", { duration: 2000 });
+        } else {
+          const data = JSON.parse(res.data);
+          toast.error(`${data.code}:${data.errno}`, {
+            description: data.message,
+            duration: 2000,
+          });
+        }
       } else {
-        state.submitting = true;
         if (state.target) {
-          dbModel.update({
+          connectionModel.update({
             id: state.target.id,
             ...data,
           });
           toast.success("Successfully updated", { duration: 2000 });
         } else {
-          dbModel.create({
+          connectionModel.create({
             id: nanoid(),
             ...data,
           });
@@ -162,16 +149,14 @@ export default () => {
         }
         state.visible = false;
       }
+    } catch (err) {
+      console.error(err);
     } finally {
-      if (isTesting) {
-        state.testing = false;
-      } else {
-        state.submitting = false;
-      }
+      state.testing = false;
     }
   };
 
-  const { list } = useSnapshot(dbModel.state);
+  const { list } = useSnapshot(connectionModel.state);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -211,8 +196,29 @@ export default () => {
       cell: ({ row }) => (
         <div
           className="cursor-pointer text-ellipsis underline hover:text-primary"
-          onClick={() => {
-            dbModel.update({ ...row.original, lastConnection: new Date() });
+          onClick={async () => {
+            const toastId = toast.loading("Connecting...");
+            try {
+              const res = await trpc.connection.connect.query(row.original);
+              toast.dismiss(toastId);
+              if (res.status) {
+                console.log(res);
+                toast.success("Successfully connected", { duration: 2000 });
+                connectionModel.connect({
+                  ...row.original,
+                  version: res.data,
+                });
+                nav("/studio");
+              } else {
+                const data = JSON.parse(res.data);
+                toast.error(`${data.code}:${data.errno}`, {
+                  description: data.message,
+                  duration: 2000,
+                });
+              }
+            } finally {
+              toast.dismiss(toastId);
+            }
           }}
         >
           {row.getValue("alias")}
@@ -222,10 +228,26 @@ export default () => {
       enableHiding: false,
     },
     {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => <div>{row.getValue("type")}</div>,
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
       accessorKey: "host",
       header: "Host",
       cell: ({ row }) => (
-        <div className="text-ellipsis">{row.getValue("host")}</div>
+        <div
+          className="flex cursor-pointer items-center gap-1 text-ellipsis"
+          onClick={() => {
+            copyToClipboard(row.getValue("host"));
+            toast.success("Copied to clipboard", { duration: 2000 });
+          }}
+        >
+          {row.getValue("host")}
+          <CopyIcon className="h-3 w-3 text-gray-500 hover:text-gray-100" />
+        </div>
       ),
       enableSorting: false,
       enableHiding: false,
@@ -240,9 +262,11 @@ export default () => {
       enableHiding: false,
     },
     {
-      accessorKey: "type",
-      header: "Type",
-      cell: ({ row }) => <div>{row.getValue("type")}</div>,
+      accessorKey: "user",
+      header: "User",
+      cell: ({ row }) => (
+        <div className="text-ellipsis">{row.getValue("user")}</div>
+      ),
       enableSorting: false,
       enableHiding: false,
     },
@@ -291,7 +315,7 @@ export default () => {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      await dbModel.remove(data);
+                      await connectionModel.remove(data);
                       table.resetRowSelection();
                       toast.success("Deleted", {
                         duration: 2000,
@@ -431,7 +455,7 @@ export default () => {
                           onClick={async () => {
                             for (let row of table.getFilteredSelectedRowModel()
                               .rows) {
-                              await dbModel.remove(row.original);
+                              await connectionModel.remove(row.original);
                             }
                             table.resetRowSelection();
                             toast.success("Deleted", {
@@ -495,7 +519,7 @@ export default () => {
         </ResizablePanel>
         {state.visible && (
           <>
-            <ResizableHandle withHandle />
+            <ResizableHandle className="w-[3px] hover:bg-primary" withHandle />
             <ResizablePanel maxSize={40} minSize={30}>
               <div className={styles.main}>
                 <div className="absolute right-8 top-6">
@@ -509,7 +533,7 @@ export default () => {
                 </div>
                 <div className={styles.form}>
                   <h1 className={styles.title}>
-                    {!state.target ? "Add" : "Update"} Database Connection
+                    {!state.target ? "Add" : "Update"} Connection
                   </h1>
                   <Form {...form}>
                     <FormField
@@ -592,14 +616,14 @@ export default () => {
                     />
                     <FormField
                       control={form.control}
-                      name="username"
+                      name="user"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs text-slate-300">
-                            Username*
+                            User*
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter Username" {...field} />
+                            <Input placeholder="Enter User" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -645,13 +669,18 @@ export default () => {
                   <div>
                     <Button
                       disabled={
-                        !form.formState.isValid || form.formState.isSubmitting
+                        state.testing ||
+                        !form.formState.isValid ||
+                        form.formState.isSubmitting
                       }
                       variant="ghost"
                       onClick={form.handleSubmit((values) => {
                         onSubmit(values, true);
                       })}
                     >
+                      {state.testing && (
+                        <RotateCwIcon className="mr-2 h-4 w-4 animate-spin" />
+                      )}
                       Test Connection
                     </Button>
                   </div>
@@ -666,12 +695,17 @@ export default () => {
                     </Button>
                     <Button
                       disabled={
-                        !form.formState.isValid || form.formState.isSubmitting
+                        state.testing ||
+                        !form.formState.isValid ||
+                        form.formState.isSubmitting
                       }
                       onClick={form.handleSubmit((values) => {
                         onSubmit(values);
                       })}
                     >
+                      {form.formState.isSubmitting && (
+                        <RotateCwIcon className="mr-2 h-4 w-4 animate-spin" />
+                      )}
                       {!state.target ? "Add" : "Update"} Connection
                     </Button>
                   </div>

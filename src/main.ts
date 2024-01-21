@@ -1,8 +1,8 @@
+import { ipcRequestHandler } from "@/api/core/server";
+import { appRouter } from "@/api/routes";
+import { initServices } from "@/api/services";
 import { app, BrowserWindow, ipcMain, shell } from "electron";
 import path from "path";
-import { appRouter } from "./api";
-import { ipcRequestHandler } from "./api/server";
-import { initServices } from "./api/services";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -12,8 +12,8 @@ if (require("electron-squirrel-startup")) {
 const createWindow = async () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1400,
+    height: 1000,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
