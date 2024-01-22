@@ -1,8 +1,14 @@
+import "reflect-metadata";
+
 import { ipcRequestHandler } from "@/api/core/server";
 import { appRouter } from "@/api/routes";
-import { initServices } from "@/api/services";
 import { app, BrowserWindow, ipcMain, shell } from "electron";
+import log from "electron-log/main";
 import path from "path";
+import { initServices } from "./api/services";
+
+log.initialize();
+console.log = log.log;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -10,6 +16,7 @@ if (require("electron-squirrel-startup")) {
 }
 
 const createWindow = async () => {
+  await initServices();
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1400,
@@ -34,7 +41,6 @@ const createWindow = async () => {
     shell.openExternal(url);
     return { action: "deny" };
   });
-  await initServices();
   ipcMain.handle("trpc", (event, req: IpcRequest) => {
     return ipcRequestHandler({
       endpoint: "/trpc",

@@ -1,4 +1,3 @@
-import { IDatabase } from "@/api/interfaces";
 import localForage from "localforage";
 import SuperJSON from "superjson";
 import { proxy } from "valtio";
@@ -20,9 +19,11 @@ export interface Connection {
 const state = proxy<{
   list: Connection[];
   target: Connection | null;
+  table: string;
 }>({
   list: [],
   target: null,
+  table: "",
 });
 
 const actions = {
@@ -33,6 +34,9 @@ const actions = {
 
     const list: string | null = await localForage.getItem("connections");
     state.list = list ? SuperJSON.parse<Connection[]>(list) : [];
+
+    const table: string | null = await localForage.getItem("connection-table");
+    state.table = table ?? "";
   },
   connect: (connection: Connection) => {
     connection.lastConnection = new Date();
@@ -41,6 +45,7 @@ const actions = {
   },
   disconnect: () => {
     state.target = null;
+    state.table = "";
   },
   create: (connection: Connection) => {
     state.list = [...state.list, connection];
@@ -63,9 +68,13 @@ const actions = {
       database,
     });
   },
+  changeTable: (table: string) => {
+    state.table = table;
+  },
 };
 
 subscribeKey(state, "target", async () => {
+  state.table = "";
   await localForage.setItem(
     "connection-target",
     SuperJSON.stringify(state.target),
@@ -74,6 +83,10 @@ subscribeKey(state, "target", async () => {
 
 subscribeKey(state, "list", async () => {
   await localForage.setItem("connections", SuperJSON.stringify(state.list));
+});
+
+subscribeKey(state, "table", async () => {
+  await localForage.setItem("connection-table", state.table);
 });
 
 export default {

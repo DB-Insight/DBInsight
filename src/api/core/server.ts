@@ -2,8 +2,6 @@ import { AnyRouter, initTRPC } from "@trpc/server";
 import { HTTPRequest, resolveHTTPResponse } from "@trpc/server/http";
 import SuperJSON from "superjson";
 import Container from "typedi";
-import { CacheService, DBFactory } from "../services";
-import { IDBDriver } from "../interfaces";
 
 interface ContextProps {
   req: any;
@@ -13,25 +11,6 @@ export async function createContextInner({ req }: ContextProps) {
   return {
     ioc: Container,
     req,
-    getConnection: async (
-      { id, type, ...connection }: any,
-      isCache: boolean = true,
-    ) => {
-      const factory = Container.get(DBFactory);
-      const cache = Container.get(CacheService);
-      let db = cache.get(id) as IDBDriver;
-      if (!db || !isCache) {
-        db = await factory.create(type, {
-          host: connection.host,
-          user: connection.user,
-          password: connection.password,
-          database: connection.database,
-        });
-        await db.connect();
-        cache.set(id, db);
-      }
-      return db;
-    },
   };
 }
 

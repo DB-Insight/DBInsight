@@ -1,9 +1,11 @@
 import { trpc } from "@/api/client";
-import { IDatabase, ITable } from "@/api/interfaces";
+import { IColumn, IDatabase, ITable } from "@/api/interfaces";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -26,57 +28,122 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import connectionModel from "@/models/connection.model";
-import { useReactive } from "ahooks";
-import {
-  InfoIcon,
-  LogOutIcon,
-  RocketIcon,
-  SearchIcon,
-  TableIcon,
-  UserIcon,
-} from "lucide-react";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSnapshot } from "valtio";
-import styles from "./index.module.css";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import connectionModel from "@/models/connection.model";
+import { ColDef } from "@ag-grid-community/core";
+import { AgGridReact } from "@ag-grid-community/react";
+import { useReactive } from "ahooks";
+import {
+  FilePlus2Icon,
+  InfoIcon,
+  LogOutIcon,
+  RefreshCcwIcon,
+  RocketIcon,
+  SearchIcon,
+  TableIcon,
+  UserIcon,
+} from "lucide-react";
+import { useEffect, useMemo } from "react";
+import Highlighter from "react-highlight-words";
+import { useNavigate } from "react-router-dom";
+import { useSnapshot } from "valtio";
+import styles from "./index.module.css";
 
 export default () => {
   const nav = useNavigate();
-  const { target } = useSnapshot(connectionModel.state);
+  const { target, table } = useSnapshot(connectionModel.state);
   const state = useReactive<{
     filter: string;
     databases: IDatabase[];
     tables: ITable[];
+    columns: ColDef[];
+    rows: any[];
+    page: number;
+    pageSize: number;
+    total: number;
   }>({
     filter: "",
     databases: [],
     tables: [],
+    rows: [],
+    columns: [],
+    page: 1,
+    pageSize: 1000,
+    total: 0,
   });
 
+  const defaultColDef = useMemo<ColDef>(() => {
+    return {
+      flex: 1,
+      minWidth: 100,
+    };
+  }, []);
+
   useEffect(() => {
-    (async () => {
-      if (target) {
-        const res = await trpc.connection.databases.query(target);
-        state.databases = res.data ?? [];
-      }
-    })();
+    loadDatebases();
   }, [target]);
 
   useEffect(() => {
-    (async () => {
-      if (!!target?.database) {
-        const res = await trpc.connection.tables.query(target);
+    state.columns = [];
+    state.rows = [];
+    state.page = 1;
+    state.pageSize = 1000;
+    state.total = 0;
+    loadTables();
+  }, [target, target?.database]);
+
+  useEffect(() => {
+    loadList();
+  }, [target?.database, table]);
+
+  const loadDatebases = async () => {
+    if (target) {
+      const res = await trpc.connection.showDatabases.query(target);
+      if (res.status) {
+        state.databases = res.data ?? [];
+      }
+    }
+  };
+
+  const loadTables = async () => {
+    if (!!target?.database) {
+      const res = await trpc.connection.showTables.query(target);
+      if (res.status) {
         state.tables = res.data ?? [];
       }
-    })();
-  }, [target?.database]);
+    }
+  };
+
+  const loadList = async () => {
+    if (!!target?.database && !!table) {
+      const status = await trpc.table.showTableStatus.query({
+        table,
+        ...target,
+      });
+
+      state.total = status?.data?.rows ?? 0;
+
+      const res = await trpc.table.list.query({
+        table,
+        page: state.page,
+        pageSize: state.pageSize,
+        ...target,
+      });
+      if (res.status) {
+        state.columns =
+          res.data.columns?.map((c: IColumn) => ({
+            field: c.field,
+          })) ?? [];
+        state.rows = res.data.rows ?? [];
+        console.log(state.columns, state.rows);
+      }
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -114,6 +181,17 @@ export default () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        loadDatebases();
+                      }}
+                    >
+                      Reload databases
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Create a new database</DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
                   <DropdownMenuLabel>Databases</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -174,17 +252,53 @@ export default () => {
                     onChange={(event) => (state.filter = event.target.value)}
                   />
                 </div>
-                <div className={styles.title}>Tables</div>
+                <div className={styles.header}>
+                  <div className={styles.name}>Tables</div>
+                  <div className="flex items-center justify-end gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <FilePlus2Icon className="h-4 w-4 cursor-pointer hover:text-gray-200" />
+                        </TooltipTrigger>
+                        <TooltipContent>Create a new table</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <RefreshCcwIcon
+                            className="h-4 w-4 cursor-pointer hover:text-gray-200"
+                            onClick={() => {
+                              loadTables();
+                            }}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>Reload tables</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
                 <div className={styles.list}>
                   {state.tables
                     .filter((t) => t.name.includes(state.filter))
                     .map((t) => (
-                      <TooltipProvider>
+                      <TooltipProvider key={t.name}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div key={t.name} className={styles.item}>
+                            <div
+                              className={`${styles.item} ${table === t.name ? styles.active : null}`}
+                              onClick={() => {
+                                connectionModel.changeTable(t.name);
+                              }}
+                            >
                               <TableIcon className="h-4 w-4 min-w-4" />
-                              <div className={styles.name}>{t.name}</div>
+                              <div className={styles.name}>
+                                <Highlighter
+                                  searchWords={[state.filter]}
+                                  autoEscape={true}
+                                  textToHighlight={t.name}
+                                />
+                              </div>
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>{t.name}</TooltipContent>
@@ -196,7 +310,33 @@ export default () => {
             </ResizablePanel>
             <ResizableHandle className="w-[3px] hover:bg-primary" withHandle />
             <ResizablePanel>
-              <div className={styles.main}></div>
+              <ResizablePanelGroup className={styles.main} direction="vertical">
+                <ResizablePanel></ResizablePanel>
+                {!!table && (
+                  <>
+                    <ResizableHandle
+                      className="w-[3px] hover:bg-primary"
+                      withHandle
+                    />
+                    <ResizablePanel
+                      className={styles.panel}
+                      defaultSize={80}
+                      maxSize={80}
+                      minSize={20}
+                    >
+                      <div className={`ag-theme-alpine-dark ${styles.grid}`}>
+                        <AgGridReact
+                          rowData={state.rows}
+                          columnDefs={state.columns}
+                          defaultColDef={defaultColDef}
+                          suppressColumnVirtualisation={true}
+                          suppressRowVirtualisation={true}
+                        />
+                      </div>
+                    </ResizablePanel>
+                  </>
+                )}
+              </ResizablePanelGroup>
             </ResizablePanel>
           </ResizablePanelGroup>
         </>

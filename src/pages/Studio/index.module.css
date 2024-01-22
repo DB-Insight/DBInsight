@@ -16,15 +16,20 @@
     @apply box-border h-full w-full;
     .side {
       @apply box-border h-full overflow-hidden pl-1 pr-2 pt-4;
-      .title {
-        @apply mt-4 text-xs text-gray-500;
-        font-family: Monument-Bold;
+      .header {
+        @apply mt-4 flex items-center justify-between pb-2 text-xs text-gray-500;
+        .name {
+          font-family: Monument-Bold;
+        }
       }
       .list {
-        @apply flex h-full flex-1 flex-col overflow-y-auto overflow-x-hidden py-2;
+        @apply flex h-full flex-1 flex-col overflow-y-auto overflow-x-hidden pb-2;
         .item {
           @apply flex cursor-pointer items-center justify-start gap-1
           rounded-md p-2 hover:bg-slate-700;
+          &.active {
+            @apply bg-primary;
+          }
           .name {
             @apply line-clamp-1 inline-block text-ellipsis text-nowrap text-sm;
           }
@@ -32,7 +37,13 @@
       }
     }
     .main {
-      @apply mt-4 box-border pl-5 pr-1;
+      @apply box-border h-full w-full overflow-auto pl-2 pt-4;
+      .panel {
+        @apply flex h-full w-full flex-col;
+        .grid {
+          @apply h-full w-full;
+        }
+      }
     }
   }
 }

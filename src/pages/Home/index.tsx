@@ -123,7 +123,7 @@ export default () => {
     try {
       if (isTesting) {
         state.testing = true;
-        const res = await trpc.connection.test.query({ ...data });
+        const res = await trpc.connection.ping.query({ ...data });
         if (res.status) {
           toast.success("Successfully connected", { duration: 2000 });
         } else {
@@ -202,7 +202,6 @@ export default () => {
               const res = await trpc.connection.connect.query(row.original);
               toast.dismiss(toastId);
               if (res.status) {
-                console.log(res);
                 toast.success("Successfully connected", { duration: 2000 });
                 connectionModel.connect({
                   ...row.original,

@@ -1,60 +1,59 @@
 import { Response } from "@/api/core";
 import { publicProcedure, router } from "@/api/core/server";
-import { ConnectionSchema } from "@/schemas";
+import { ConnectionSchema, ListTableSchema, TableSchema } from "@/schemas";
 import { DBFactory } from "../services";
 
-export const connectionRouter = router({
-  ping: publicProcedure
-    .input(ConnectionSchema)
+export const tableRouter = router({
+  showTableStatus: publicProcedure
+    .input(ConnectionSchema.merge(TableSchema))
     .query(async ({ ctx, input }) => {
       try {
-        const { type, ...connection } = input;
+        const { table, type, ...connection } = input;
         const factory = ctx.ioc.get(DBFactory);
         const db = await factory.create(type, connection);
-        await db.ping();
-        return Response.ok();
+        const res = await db.showTableStatus(table);
+        return Response.ok(res);
       } catch (err) {
         console.error(err);
         return Response.fail(JSON.stringify(err));
       }
     }),
-  connect: publicProcedure
-    .input(ConnectionSchema)
+  showCreateTable: publicProcedure
+    .input(ConnectionSchema.merge(TableSchema))
     .query(async ({ ctx, input }) => {
       try {
-        const { type, ...connection } = input;
+        const { table, type, ...connection } = input;
         const factory = ctx.ioc.get(DBFactory);
         const db = await factory.create(type, connection);
-        return Response.ok(await db.getVersion());
+        const res = await db.showCreateTable(table);
+        return Response.ok(res);
+      } catch (err) {
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  showColumns: publicProcedure
+    .input(ConnectionSchema.merge(TableSchema))
+    .query(async ({ ctx, input }) => {
+      try {
+        const { table, type, ...connection } = input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        const res = await db.showColumns(table);
+        return Response.ok(res);
       } catch (err) {
         console.error(err);
         return Response.fail(JSON.stringify(err));
       }
     }),
-  showDatabases: publicProcedure
-    .input(ConnectionSchema)
+  list: publicProcedure
+    .input(ConnectionSchema.merge(TableSchema.merge(ListTableSchema)))
     .query(async ({ ctx, input }) => {
       try {
-        const { type, ...connection } = input;
+        const { table, page, pageSize, type, ...connection } = input;
         const factory = ctx.ioc.get(DBFactory);
         const db = await factory.create(type, connection);
-        return Response.ok(await db.showDatabases());
-      } catch (err) {
-        console.error(err);
-        return Response.fail(JSON.stringify(err));
-      }
-    }),
-  showTables: publicProcedure
-    .input(ConnectionSchema)
-    .query(async ({ ctx, input }) => {
-      if (!input.database) {
-        return Response.fail("Database is required");
-      }
-      try {
-        const { type, ...connection } = input;
-        const factory = ctx.ioc.get(DBFactory);
-        const db = await factory.create(type, connection);
-        return Response.ok(await db.showTables());
+        const res = await db.queryTable(table, page, pageSize);
+        return Response.ok(res);
       } catch (err) {
         console.error(err);
         return Response.fail(JSON.stringify(err));
