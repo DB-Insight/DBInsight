@@ -1,10 +1,10 @@
 import KeepAlive from "@/components/KeepAlive";
+import { Toaster } from "@/components/ui/sonner";
 import { useEffect, useState } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import { Offscreen } from "react-stillness-component";
 import Menu from "./Menu";
 import styles from "./index.module.css";
-import { Toaster } from "@/components/ui/sonner";
 
 export default () => {
   const location = useLocation();

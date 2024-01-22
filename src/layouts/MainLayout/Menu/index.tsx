@@ -19,19 +19,21 @@ export default () => {
             if (!item.hideInMenu) return true;
             return false;
           })
-          .map((item) => (
-            <div
-              key={item.path}
-              className={`flex cursor-pointer items-center justify-center px-3 py-3 text-sm ${
-                location.pathname === item.path ? "bg-primary" : styles.node
-              } `}
-              onClick={() => {
-                nav(item.path);
-              }}
-            >
-              {item.icon}
-            </div>
-          ))}
+          .map((item) => {
+            return (
+              <div
+                key={item.path}
+                className={`flex cursor-pointer items-center justify-center px-3 py-3 text-sm ${
+                  location.pathname === item.path ? "bg-primary" : styles.node
+                } `}
+                onClick={() => {
+                  nav(item.path);
+                }}
+              >
+                {item.icon}
+              </div>
+            );
+          })}
       </div>
       <div className="flex flex-col">
         <div

@@ -17,7 +17,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -28,36 +27,28 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import connectionModel from "@/models/connection.model";
 import { ColDef } from "@ag-grid-community/core";
 import { AgGridReact } from "@ag-grid-community/react";
 import { useReactive } from "ahooks";
-import {
-  FilePlus2Icon,
-  InfoIcon,
-  LogOutIcon,
-  RefreshCcwIcon,
-  RocketIcon,
-  SearchIcon,
-  TableIcon,
-  UserIcon,
-} from "lucide-react";
+import { Allotment } from "allotment";
+import { InfoIcon, LogOutIcon, RocketIcon, UserIcon } from "lucide-react";
 import { useEffect, useMemo } from "react";
-import Highlighter from "react-highlight-words";
 import { useNavigate } from "react-router-dom";
+import { Offscreen } from "react-stillness-component";
 import { useSnapshot } from "valtio";
+import Chats from "./Chats";
+import Editor from "./Editor";
+import Queries from "./Queries";
+import Tables from "./Tables";
 import styles from "./index.module.css";
 
 export default () => {
   const nav = useNavigate();
   const { target, table } = useSnapshot(connectionModel.state);
   const state = useReactive<{
+    tab: string;
     filter: string;
     databases: IDatabase[];
     tables: ITable[];
@@ -67,6 +58,7 @@ export default () => {
     pageSize: number;
     total: number;
   }>({
+    tab: "tables",
     filter: "",
     databases: [],
     tables: [],
@@ -241,102 +233,52 @@ export default () => {
             direction="horizontal"
           >
             <ResizablePanel defaultSize={22} maxSize={80} minSize={0}>
+              <Tabs
+                className="mb-1 text-center"
+                value={state.tab}
+                onValueChange={(e) => (state.tab = e)}
+              >
+                <TabsList>
+                  <TabsTrigger value="tables">Tables</TabsTrigger>
+                  <TabsTrigger value="queries">Queries</TabsTrigger>
+                  <TabsTrigger value="chats">Chats</TabsTrigger>
+                </TabsList>
+              </Tabs>
               <div className={styles.side}>
-                <div className="relative">
-                  <SearchIcon className="absolute bottom-0 left-3 top-0 my-auto h-5 w-5 text-gray-500" />
-                  <Input
-                    className="rounded-md pl-10 pr-4"
-                    type="text"
-                    placeholder="Filter"
-                    value={state.filter}
-                    onChange={(event) => (state.filter = event.target.value)}
-                  />
-                </div>
-                <div className={styles.header}>
-                  <div className={styles.name}>Tables</div>
-                  <div className="flex items-center justify-end gap-2">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <FilePlus2Icon className="h-4 w-4 cursor-pointer hover:text-gray-200" />
-                        </TooltipTrigger>
-                        <TooltipContent>Create a new table</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <RefreshCcwIcon
-                            className="h-4 w-4 cursor-pointer hover:text-gray-200"
-                            onClick={() => {
-                              loadTables();
-                            }}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>Reload tables</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                </div>
-                <div className={styles.list}>
-                  {state.tables
-                    .filter((t) => t.name.includes(state.filter))
-                    .map((t) => (
-                      <TooltipProvider key={t.name}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div
-                              className={`${styles.item} ${table === t.name ? styles.active : null}`}
-                              onClick={() => {
-                                connectionModel.changeTable(t.name);
-                              }}
-                            >
-                              <TableIcon className="h-4 w-4 min-w-4" />
-                              <div className={styles.name}>
-                                <Highlighter
-                                  searchWords={[state.filter]}
-                                  autoEscape={true}
-                                  textToHighlight={t.name}
-                                />
-                              </div>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>{t.name}</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ))}
-                </div>
+                <Offscreen visible={state.tab === "tables"}>
+                  <Tables />
+                </Offscreen>
+                <Offscreen visible={state.tab === "queries"}>
+                  <Queries />
+                </Offscreen>
+                <Offscreen visible={state.tab === "chats"}>
+                  <Chats />
+                </Offscreen>
               </div>
             </ResizablePanel>
             <ResizableHandle className="w-[3px] hover:bg-primary" withHandle />
-            <ResizablePanel>
-              <ResizablePanelGroup className={styles.main} direction="vertical">
-                <ResizablePanel></ResizablePanel>
-                {!!table && (
-                  <>
-                    <ResizableHandle
-                      className="w-[3px] hover:bg-primary"
-                      withHandle
+            <ResizablePanel className={styles.main}>
+              <Allotment vertical>
+                <Allotment.Pane key="editor" minSize={70}>
+                  <Editor />
+                </Allotment.Pane>
+                <Allotment.Pane
+                  key="panel"
+                  snap
+                  minSize={100}
+                  preferredSize="40%"
+                >
+                  <div className={`ag-theme-alpine-dark ${styles.grid}`}>
+                    <AgGridReact
+                      rowData={state.rows}
+                      columnDefs={state.columns}
+                      defaultColDef={defaultColDef}
+                      suppressColumnVirtualisation={true}
+                      suppressRowVirtualisation={true}
                     />
-                    <ResizablePanel
-                      className={styles.panel}
-                      defaultSize={80}
-                      maxSize={80}
-                      minSize={20}
-                    >
-                      <div className={`ag-theme-alpine-dark ${styles.grid}`}>
-                        <AgGridReact
-                          rowData={state.rows}
-                          columnDefs={state.columns}
-                          defaultColDef={defaultColDef}
-                          suppressColumnVirtualisation={true}
-                          suppressRowVirtualisation={true}
-                        />
-                      </div>
-                    </ResizablePanel>
-                  </>
-                )}
-              </ResizablePanelGroup>
+                  </div>
+                </Allotment.Pane>
+              </Allotment>
             </ResizablePanel>
           </ResizablePanelGroup>
         </>

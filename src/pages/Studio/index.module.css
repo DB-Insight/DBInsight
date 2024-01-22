@@ -1,5 +1,5 @@
 .container {
-  @apply flex h-full flex-1 flex-col overflow-hidden p-4;
+  @apply flex h-full flex-1 flex-col overflow-hidden p-2;
   .title {
     @apply flex items-center gap-1;
     font-family: Monument-Bold;
@@ -13,36 +13,21 @@
     }
   }
   .content {
-    @apply box-border h-full w-full;
+    @apply box-border h-full w-full pl-2 pt-4;
     .side {
-      @apply box-border h-full overflow-hidden pl-1 pr-2 pt-4;
-      .header {
-        @apply mt-4 flex items-center justify-between pb-2 text-xs text-gray-500;
-        .name {
-          font-family: Monument-Bold;
-        }
-      }
-      .list {
-        @apply flex h-full flex-1 flex-col overflow-y-auto overflow-x-hidden pb-2;
-        .item {
-          @apply flex cursor-pointer items-center justify-start gap-1
-          rounded-md p-2 hover:bg-slate-700;
-          &.active {
-            @apply bg-primary;
-          }
-          .name {
-            @apply line-clamp-1 inline-block text-ellipsis text-nowrap text-sm;
-          }
-        }
+      @apply box-border h-full overflow-hidden;
+      div[data-type="offscreen-wrapper"] {
+        @apply h-full overflow-hidden;
       }
     }
     .main {
-      @apply box-border h-full w-full overflow-auto pl-2 pt-4;
-      .panel {
-        @apply flex h-full w-full flex-col;
-        .grid {
-          @apply h-full w-full;
-        }
+      @apply box-border h-full w-full overflow-hidden;
+      .editor {
+        @apply flex flex-1;
+        background-color: red;
+      }
+      .grid {
+        @apply h-full w-full pt-1;
       }
     }
   }

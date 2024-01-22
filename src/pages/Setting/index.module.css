@@ -1,5 +1,5 @@
 .container {
-  @apply flex h-full flex-1 flex-col p-4;
+  @apply flex h-full flex-1 flex-col p-2;
   .title {
     font-family: Monument-Bold;
     font-size: 1.5rem;

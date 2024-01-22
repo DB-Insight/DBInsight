@@ -1,6 +1,7 @@
 import AuthLayout from "@/layouts/AuthLayout";
 import Home from "@/pages/Home";
 import Setting from "@/pages/Setting";
+import Studio from "@/pages/Studio";
 import {
   KanbanSquareIcon,
   LayoutDashboardIcon,
@@ -8,7 +9,6 @@ import {
 } from "lucide-react";
 import { ReactNode } from "react";
 import { createBrowserRouter, useRouteError } from "react-router-dom";
-import Studio from "./pages/Studio";
 
 const ErrorBoundary = () => {
   const error: any = useRouteError();
@@ -22,6 +22,7 @@ interface MenuItem {
   icon: ReactNode;
   hideInMenu?: boolean;
   hideInNoTarget?: boolean;
+  children?: MenuItem[];
 }
 
 export const menus = [
