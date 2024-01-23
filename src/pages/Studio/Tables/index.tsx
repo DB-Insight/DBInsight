@@ -40,6 +40,7 @@ export default () => {
       const res = await trpc.connection.showTables.query(target);
       if (res.status) {
         state.tables = res.data ?? [];
+        console.log(state.tables);
       }
     }
   };
@@ -47,7 +48,7 @@ export default () => {
   return (
     <div className={styles.container}>
       <div className="relative">
-        <SearchIcon className="absolute bottom-0 left-3 top-0 my-auto h-5 w-5 text-gray-500" />
+        <SearchIcon className="absolute bottom-0 left-3 top-0 my-auto h-4 w-4 text-gray-500" />
         <Input
           className="rounded-md pl-10 pr-4"
           type="text"

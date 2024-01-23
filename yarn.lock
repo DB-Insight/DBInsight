@@ -5443,6 +5443,11 @@ rcedit@^4.0.0:
   dependencies:
     cross-spawn-windows-exe "^1.1.0"
 
+react-accessible-treeview@^2.8.3:
+  version "2.8.3"
+  resolved "https://registry.npmjs.org/react-accessible-treeview/-/react-accessible-treeview-2.8.3.tgz#4d13b2d4e9e088ab01b1243e0b4363cee1a73f41"
+  integrity sha512-taDTIYZ6p96/zIhJBUKvyGTXcInudatP/9fwKG0BW+VRf1PmU5hOT2FkDovDKzSwj2VSOj1PRx+E6ojhOA+2xA==
+
 react-dom@^18.2.0:
   version "18.2.0"
   resolved "https://registry.npmmirror.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"

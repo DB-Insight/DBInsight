@@ -1,5 +1,5 @@
 .container {
-  @apply flex h-full flex-1 flex-col overflow-hidden p-2;
+  @apply flex flex-1 flex-col overflow-hidden p-2;
   .title {
     @apply flex items-center gap-1;
     font-family: Monument-Bold;
@@ -13,18 +13,17 @@
     }
   }
   .content {
-    @apply box-border h-full w-full pl-2 pt-4;
+    @apply box-border flex h-full w-full flex-1 flex-col overflow-hidden pl-2 pt-4;
     .side {
-      @apply box-border h-full overflow-hidden;
+      @apply flex flex-1 flex-col overflow-hidden;
       div[data-type="offscreen-wrapper"] {
-        @apply h-full overflow-hidden;
+        @apply h-full w-full overflow-hidden;
       }
     }
     .main {
       @apply box-border h-full w-full overflow-hidden;
       .editor {
         @apply flex flex-1;
-        background-color: red;
       }
       .grid {
         @apply h-full w-full pt-1;

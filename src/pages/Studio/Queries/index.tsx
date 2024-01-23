@@ -5,44 +5,29 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import connectionModel from "@/models/connection.model";
+import codeModel from "@/models/code.model";
+import { useReactive } from "ahooks";
 import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  FileIcon,
   FilePlus2Icon,
+  FolderIcon,
   RefreshCcwIcon,
   SearchIcon,
-  TableIcon,
 } from "lucide-react";
+import TreeView, { INode } from "react-accessible-treeview";
 import Highlighter from "react-highlight-words";
-
-import { trpc } from "@/api/client";
-import { ITable } from "@/api/interfaces";
-import { useReactive } from "ahooks";
-import { useEffect } from "react";
-import styles from "./index.module.css";
 import { useSnapshot } from "valtio";
+import styles from "./index.module.css";
 
 export default () => {
-  const { target, table } = useSnapshot(connectionModel.state);
+  const { folder } = useSnapshot(codeModel.state);
   const state = useReactive<{
     filter: string;
-    tables: ITable[];
   }>({
     filter: "",
-    tables: [],
   });
-
-  useEffect(() => {
-    loadTables();
-  }, [target, target?.database]);
-
-  const loadTables = async () => {
-    if (!!target?.database) {
-      const res = await trpc.connection.showTables.query(target);
-      if (res.status) {
-        state.tables = res.data ?? [];
-      }
-    }
-  };
 
   return (
     <div className={styles.container}>
@@ -72,9 +57,7 @@ export default () => {
               <TooltipTrigger asChild>
                 <RefreshCcwIcon
                   className="h-4 w-4 cursor-pointer hover:text-gray-200"
-                  onClick={() => {
-                    loadTables();
-                  }}
+                  onClick={() => {}}
                 />
               </TooltipTrigger>
               <TooltipContent>Reload tables</TooltipContent>
@@ -83,32 +66,40 @@ export default () => {
         </div>
       </div>
       <div className={styles.list}>
-        {state.tables
-          .filter((t) => t.name.includes(state.filter))
-          .map((t) => (
-            <TooltipProvider key={t.name}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    className={`${styles.item} ${table === t.name ? styles.active : null}`}
-                    onClick={() => {
-                      connectionModel.changeTable(t.name);
-                    }}
-                  >
-                    <TableIcon className="h-4 w-4 min-w-4" />
-                    <div className={styles.name}>
-                      <Highlighter
-                        searchWords={[state.filter]}
-                        autoEscape={true}
-                        textToHighlight={t.name}
-                      />
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>{t.name}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ))}
+        <TreeView
+          data={folder as INode[]}
+          nodeRenderer={({
+            element,
+            getNodeProps,
+            level,
+            isBranch,
+            isExpanded,
+          }) => (
+            <div {...getNodeProps()} style={{ paddingLeft: 20 * (level - 1) }}>
+              <div className={styles.item}>
+                {isBranch ? (
+                  <>
+                    {isExpanded ? (
+                      <ChevronDownIcon className="h-4 w-4 min-w-4" />
+                    ) : (
+                      <ChevronRightIcon className="h-4 w-4 min-w-4" />
+                    )}
+                    <FolderIcon className="h-4 w-4 min-w-4" />
+                  </>
+                ) : (
+                  <FileIcon className="ml-5 h-4 w-4 min-w-4" />
+                )}
+                <div className={styles.name}>
+                  <Highlighter
+                    searchWords={[state.filter]}
+                    autoEscape={true}
+                    textToHighlight={element.name}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        />
       </div>
     </div>
   );

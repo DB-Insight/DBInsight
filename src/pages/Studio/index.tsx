@@ -232,7 +232,12 @@ export default () => {
             className={styles.content}
             direction="horizontal"
           >
-            <ResizablePanel defaultSize={22} maxSize={80} minSize={0}>
+            <ResizablePanel
+              className={styles.side}
+              defaultSize={20}
+              maxSize={80}
+              minSize={0}
+            >
               <Tabs
                 className="mb-1 text-center"
                 value={state.tab}
@@ -244,17 +249,15 @@ export default () => {
                   <TabsTrigger value="chats">Chats</TabsTrigger>
                 </TabsList>
               </Tabs>
-              <div className={styles.side}>
-                <Offscreen visible={state.tab === "tables"}>
-                  <Tables />
-                </Offscreen>
-                <Offscreen visible={state.tab === "queries"}>
-                  <Queries />
-                </Offscreen>
-                <Offscreen visible={state.tab === "chats"}>
-                  <Chats />
-                </Offscreen>
-              </div>
+              <Offscreen visible={state.tab === "tables"}>
+                <Tables />
+              </Offscreen>
+              <Offscreen visible={state.tab === "queries"}>
+                <Queries />
+              </Offscreen>
+              <Offscreen visible={state.tab === "chats"}>
+                <Chats />
+              </Offscreen>
             </ResizablePanel>
             <ResizableHandle className="w-[3px] hover:bg-primary" withHandle />
             <ResizablePanel className={styles.main}>
