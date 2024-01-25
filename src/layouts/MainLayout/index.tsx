@@ -1,4 +1,3 @@
-import KeepAlive from "@/components/KeepAlive";
 import { Toaster } from "@/components/ui/sonner";
 import { useEffect, useState } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
@@ -35,7 +34,7 @@ export default () => {
       <div className={styles.content}>
         {outlets.map((o: any) => (
           <Offscreen key={o.key} visible={locationPathname === o.pathname}>
-            <KeepAlive path={o.pathname}>{o.outlet}</KeepAlive>
+            {o.outlet}
           </Offscreen>
         ))}
       </div>

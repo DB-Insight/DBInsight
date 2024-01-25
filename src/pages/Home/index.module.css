@@ -16,7 +16,7 @@
       @apply relative flex h-full w-full flex-col overflow-hidden rounded-md p-2;
       background-color: #171b26;
       .form {
-        @apply flex flex-1 flex-col space-y-2 overflow-y-auto border border-primary px-6 py-4;
+        @apply flex flex-1 flex-col space-y-2 overflow-hidden border border-primary px-6 py-4 hover:overflow-auto;
         background-color: #21252c;
         .title {
           @apply mb-4 text-sm;

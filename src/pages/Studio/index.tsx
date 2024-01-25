@@ -1,5 +1,6 @@
 import { trpc } from "@/api/client";
 import { IColumn, IDatabase, ITable } from "@/api/interfaces";
+import KeepAlive from "@/components/KeepAlive";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,12 +37,10 @@ import { Allotment } from "allotment";
 import { InfoIcon, LogOutIcon, RocketIcon, UserIcon } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Offscreen } from "react-stillness-component";
 import { useSnapshot } from "valtio";
-import Chats from "./Chats";
+import Chat from "./Chat";
+import Data from "./Data";
 import Editor from "./Editor";
-import Queries from "./Queries";
-import Tables from "./Tables";
 import styles from "./index.module.css";
 
 export default () => {
@@ -58,7 +57,7 @@ export default () => {
     pageSize: number;
     total: number;
   }>({
-    tab: "tables",
+    tab: "data",
     filter: "",
     databases: [],
     tables: [],
@@ -234,30 +233,26 @@ export default () => {
           >
             <ResizablePanel
               className={styles.side}
-              defaultSize={20}
+              defaultSize={30}
               maxSize={80}
               minSize={0}
             >
               <Tabs
-                className="mb-1 text-center"
+                className="mb-1 pr-[20px] text-center"
                 value={state.tab}
                 onValueChange={(e) => (state.tab = e)}
               >
                 <TabsList>
-                  <TabsTrigger value="tables">Tables</TabsTrigger>
-                  <TabsTrigger value="queries">Queries</TabsTrigger>
-                  <TabsTrigger value="chats">Chats</TabsTrigger>
+                  <TabsTrigger value="data">Data</TabsTrigger>
+                  <TabsTrigger value="chat">Chat</TabsTrigger>
                 </TabsList>
               </Tabs>
-              <Offscreen visible={state.tab === "tables"}>
-                <Tables />
-              </Offscreen>
-              <Offscreen visible={state.tab === "queries"}>
-                <Queries />
-              </Offscreen>
-              <Offscreen visible={state.tab === "chats"}>
-                <Chats />
-              </Offscreen>
+              <KeepAlive visible={state.tab === "data"}>
+                <Data />
+              </KeepAlive>
+              <KeepAlive visible={state.tab === "chat"}>
+                <Chat />
+              </KeepAlive>
             </ResizablePanel>
             <ResizableHandle className="w-[3px] hover:bg-primary" withHandle />
             <ResizablePanel className={styles.main}>

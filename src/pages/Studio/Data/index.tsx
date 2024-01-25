@@ -5,7 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import codeModel from "@/models/data.model";
+import dataModel from "@/models/data.model";
 import { useReactive } from "ahooks";
 import { FilePlus2Icon, RefreshCcwIcon, SearchIcon } from "lucide-react";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
@@ -18,7 +18,7 @@ import { useSnapshot } from "valtio";
 import styles from "./index.module.css";
 
 export default () => {
-  const { folder } = useSnapshot(codeModel.state);
+  const { folder } = useSnapshot(dataModel.state);
   const state = useReactive<{
     filter: string;
   }>({

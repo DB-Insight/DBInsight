@@ -1,38 +1,18 @@
-import { PropsWithChildren, useEffect } from "react";
-import { useStillness, useStillnessManager } from "react-stillness-component";
+import { PropsWithChildren } from "react";
 
 interface KeepAliveProps extends PropsWithChildren {
-  path: string;
+  visible: boolean;
 }
 
-export default ({ path, children }: KeepAliveProps) => {
-  const manager = useStillnessManager();
-
-  const collected = useStillness({
-    collect: (contract) => {
-      return {
-        isStillness: contract.isStillness(),
-        stillnessId: contract.getStillnessId(),
-      };
-    },
-  });
-
-  useEffect(() => {
-    const handler = ({ activeKey }: any) => {
-      if (activeKey === path) {
-        manager.getActions().triggerUnset({
-          id: collected.stillnessId,
-        });
-      }
-    };
-
-    if (collected.stillnessId && path) {
-      
-    }
-
-    return () => {
-    };
-  }, [collected.stillnessId, path]);
-
-  return <>{children}</>;
+export default ({ visible = true, children }: KeepAliveProps) => {
+  return (
+    <div
+      className={`h-full w-full`}
+      style={{
+        display: visible ? "block" : "none",
+      }}
+    >
+      {children}
+    </div>
+  );
 };
