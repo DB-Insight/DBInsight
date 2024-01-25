@@ -1,28 +1,3 @@
 .container {
   @apply box-border flex h-full w-full flex-1 flex-col overflow-hidden;
-  .tree {
-    @apply relative h-full w-full overflow-auto;
-    :global(.rct-tree-items-container) {
-      @apply h-full w-full;
-    }
-    .header {
-      @apply flex items-center justify-between pb-2 pr-[20px] pt-4 text-xs text-gray-500;
-      .name {
-        font-family: Monument-Bold;
-      }
-    }
-    .node {
-      @apply box-border flex h-full max-h-[400px] w-full flex-1 flex-col overflow-y-auto overflow-x-hidden pr-[20px];
-      .item {
-        @apply flex cursor-pointer select-none items-center
-          justify-start gap-1 rounded-md px-2 py-1 hover:bg-slate-700;
-        &.active {
-          @apply bg-primary;
-        }
-        .name {
-          @apply line-clamp-1 inline-block select-none text-ellipsis text-nowrap text-sm;
-        }
-      }
-    }
-  }
 }

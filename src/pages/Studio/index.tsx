@@ -1,5 +1,5 @@
 import { trpc } from "@/api/client";
-import { IColumn, IDatabase, ITable } from "@/api/interfaces";
+import { IDatabase } from "@/api/interfaces";
 import KeepAlive from "@/components/KeepAlive";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,115 +23,42 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import connectionModel from "@/models/connection.model";
-import { ColDef } from "@ag-grid-community/core";
-import { AgGridReact } from "@ag-grid-community/react";
 import { useReactive } from "ahooks";
 import { Allotment } from "allotment";
 import { InfoIcon, LogOutIcon, RocketIcon, UserIcon } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSnapshot } from "valtio";
 import Chat from "./Chat";
 import Data from "./Data";
 import Editor from "./Editor";
+import Panel from "./Panel";
 import styles from "./index.module.css";
 
 export default () => {
   const nav = useNavigate();
-  const { target, table } = useSnapshot(connectionModel.state);
+  const { target } = useSnapshot(connectionModel.state);
   const state = useReactive<{
     tab: string;
     filter: string;
     databases: IDatabase[];
-    tables: ITable[];
-    columns: ColDef[];
-    rows: any[];
-    page: number;
-    pageSize: number;
-    total: number;
   }>({
     tab: "data",
     filter: "",
     databases: [],
-    tables: [],
-    rows: [],
-    columns: [],
-    page: 1,
-    pageSize: 1000,
-    total: 0,
   });
-
-  const defaultColDef = useMemo<ColDef>(() => {
-    return {
-      flex: 1,
-      minWidth: 100,
-    };
-  }, []);
 
   useEffect(() => {
     loadDatebases();
   }, [target]);
-
-  useEffect(() => {
-    state.columns = [];
-    state.rows = [];
-    state.page = 1;
-    state.pageSize = 1000;
-    state.total = 0;
-    loadTables();
-  }, [target, target?.database]);
-
-  useEffect(() => {
-    loadList();
-  }, [target?.database, table]);
 
   const loadDatebases = async () => {
     if (target) {
       const res = await trpc.connection.showDatabases.query(target);
       if (res.status) {
         state.databases = res.data ?? [];
-      }
-    }
-  };
-
-  const loadTables = async () => {
-    if (!!target?.database) {
-      const res = await trpc.connection.showTables.query(target);
-      if (res.status) {
-        state.tables = res.data ?? [];
-      }
-    }
-  };
-
-  const loadList = async () => {
-    if (!!target?.database && !!table) {
-      const status = await trpc.table.showTableStatus.query({
-        table,
-        ...target,
-      });
-
-      state.total = status?.data?.rows ?? 0;
-
-      const res = await trpc.table.list.query({
-        table,
-        page: state.page,
-        pageSize: state.pageSize,
-        ...target,
-      });
-      if (res.status) {
-        state.columns =
-          res.data.columns?.map((c: IColumn) => ({
-            field: c.field,
-          })) ?? [];
-        state.rows = res.data.rows ?? [];
-        console.log(state.columns, state.rows);
       }
     }
   };
@@ -226,17 +153,8 @@ export default () => {
               </Popover>
             </div>
           </div>
-
-          <ResizablePanelGroup
-            className={styles.content}
-            direction="horizontal"
-          >
-            <ResizablePanel
-              className={styles.side}
-              defaultSize={30}
-              maxSize={80}
-              minSize={0}
-            >
+          <Allotment className={styles.content} defaultSizes={[25, 75]}>
+            <Allotment.Pane className={styles.side}>
               <Tabs
                 className="mb-1 pr-[20px] text-center"
                 value={state.tab}
@@ -253,32 +171,28 @@ export default () => {
               <KeepAlive visible={state.tab === "chat"}>
                 <Chat />
               </KeepAlive>
-            </ResizablePanel>
-            <ResizableHandle className="w-[3px] hover:bg-primary" withHandle />
-            <ResizablePanel className={styles.main}>
-              <Allotment vertical>
-                <Allotment.Pane key="editor" minSize={70}>
+            </Allotment.Pane>
+            <Allotment.Pane className={styles.main}>
+              <Allotment defaultSizes={[60, 40]} vertical>
+                <Allotment.Pane
+                  className={styles.layout}
+                  key="layout"
+                  snap
+                  minSize={100}
+                >
                   <Editor />
                 </Allotment.Pane>
                 <Allotment.Pane
+                  className={styles.panel}
                   key="panel"
                   snap
                   minSize={100}
-                  preferredSize="40%"
                 >
-                  <div className={`ag-theme-alpine-dark ${styles.grid}`}>
-                    <AgGridReact
-                      rowData={state.rows}
-                      columnDefs={state.columns}
-                      defaultColDef={defaultColDef}
-                      suppressColumnVirtualisation={true}
-                      suppressRowVirtualisation={true}
-                    />
-                  </div>
+                  <Panel />
                 </Allotment.Pane>
               </Allotment>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            </Allotment.Pane>
+          </Allotment>
         </>
       )}
     </div>

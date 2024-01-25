@@ -1,0 +1,13 @@
+.container {
+  @apply box-border flex h-full max-h-[400px] w-full flex-1 flex-col overflow-y-auto overflow-x-hidden;
+  .item {
+    @apply flex cursor-pointer select-none items-center
+          justify-start gap-1 rounded-md px-2 py-1 hover:bg-slate-700;
+    &.active {
+      @apply bg-primary;
+    }
+    .name {
+      @apply line-clamp-1 inline-block select-none text-ellipsis text-nowrap text-sm;
+    }
+  }
+}

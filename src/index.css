@@ -3,6 +3,8 @@
 
 @import url("allotment/dist/style.css");
 @import url("react-complex-tree/lib/style.css");
+@import url("flexlayout-react/style/dark.css");
+@import url("xterm/css/xterm.css");
 
 @tailwind base;
 @tailwind components;
@@ -60,7 +62,7 @@
     @apply border-border;
   }
   body {
-    @apply overflow-hidden bg-background text-foreground;
+    @apply bg-background text-foreground;
   }
   :root {
     font-family:

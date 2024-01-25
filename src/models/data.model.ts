@@ -1,24 +1,35 @@
+import { TreeItem, TreeItemIndex } from "react-complex-tree";
 import { proxy } from "valtio";
 
 const state = proxy<{
-  folder: any;
+  folder: Record<TreeItemIndex, TreeItem<any>>;
 }>({
   folder: {
     root: {
       index: "root",
       isFolder: true,
-      children: ["child1"],
-      data: "Root item",
+      children: ["tables", "queries"],
+      data: "root",
     },
-    child1: {
-      index: "child1",
+    tables: {
+      index: "tables",
       isFolder: true,
-      children: ["child2"],
+      children: ["tablesPanel"],
       data: "tables",
     },
-    child2: {
-      index: "child2",
-      data: "views",
+    tablesPanel: {
+      index: "tablesPanel",
+      data: "tablesPanel",
+    },
+    queries: {
+      index: "queries",
+      isFolder: true,
+      children: ["queriesPanel"],
+      data: "queries",
+    },
+    queriesPanel: {
+      index: "queriesPanel",
+      data: "queriesPanel",
     },
   },
 });

@@ -13,20 +13,17 @@
     }
   }
   .content {
-    @apply box-border flex h-full w-full flex-1 flex-col overflow-hidden pl-2 pt-4;
+    @apply box-border flex h-full w-full flex-1 flex-col overflow-hidden pl-2 pt-2;
     .side {
       @apply flex flex-1 flex-col overflow-hidden;
-      div[data-type="offscreen-wrapper"] {
-        @apply h-full w-full overflow-hidden;
-      }
     }
     .main {
       @apply box-border h-full w-full overflow-hidden;
       .editor {
         @apply flex flex-1;
       }
-      .grid {
-        @apply h-full w-full pt-1;
+      .panel {
+        @apply flex flex-1;
       }
     }
   }
