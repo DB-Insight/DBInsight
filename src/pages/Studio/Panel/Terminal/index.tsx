@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import styles from "./index.module.css";
+import { IpcRendererEvent, ipcRenderer } from "electron";
 
 export const files = {
   "index.js": {
@@ -50,6 +51,12 @@ export default () => {
   const fitAddonRef = useRef<FitAddon>();
 
   useEffect(() => {
+    const onLog = (e: IpcRendererEvent, data: string) => {
+      if (terminalRef.current) {
+        terminalRef.current.writeln(data);
+      }
+    };
+
     if (!!ref.current) {
       terminalRef.current = new Terminal({
         convertEol: true,
@@ -58,14 +65,17 @@ export default () => {
         },
       });
 
-      fitAddonRef.current = new FitAddon();
+      window.API.on("log", onLog);
 
+      fitAddonRef.current = new FitAddon();
       terminalRef.current.loadAddon(fitAddonRef.current);
 
       terminalRef.current.open(ref.current);
       fitAddonRef.current.fit();
     }
     return () => {
+      window.API.off("log", onLog);
+
       if (terminalRef.current) {
         terminalRef.current.dispose();
       }

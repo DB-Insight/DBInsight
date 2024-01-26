@@ -1,6 +1,6 @@
 import { Response } from "@/api/core";
 import { publicProcedure, router } from "@/api/core/server";
-import { ConnectionSchema } from "@/schemas";
+import { ConnectionSchema, RawSchema } from "@/schemas";
 import { DBFactory } from "../services";
 
 export const connectionRouter = router({
@@ -55,6 +55,19 @@ export const connectionRouter = router({
         const factory = ctx.ioc.get(DBFactory);
         const db = await factory.create(type, connection);
         return Response.ok(await db.showTables());
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  raw: publicProcedure
+    .input(ConnectionSchema.merge(RawSchema))
+    .query(async ({ ctx, input }) => {
+      try {
+        const { type, sql, ...connection } = input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        return Response.ok(await db.raw(sql));
       } catch (err) {
         console.error(err);
         return Response.fail(JSON.stringify(err));

@@ -1,3 +1,18 @@
 .container {
-  @apply h-full w-full p-1;
+  @apply flex h-full w-full flex-col p-1;
+  .grid {
+    @apply h-full w-full;
+    .header {
+      @apply flex items-baseline;
+      font-family: Inter;
+      .type {
+        @apply ml-1 uppercase text-muted-foreground;
+        font-family: FiraCode-Light;
+        font-size: 0.5rem;
+      }
+    }
+  }
+  .footer {
+    @apply flex select-none items-center justify-between pt-1 text-xs text-gray-300;
+  }
 }

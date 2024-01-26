@@ -16,7 +16,6 @@ if (require("electron-squirrel-startup")) {
 }
 
 const createWindow = async () => {
-  await initServices();
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1600,
@@ -25,6 +24,7 @@ const createWindow = async () => {
       preload: path.join(__dirname, "preload.js"),
     },
   });
+  await initServices(mainWindow);
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -71,6 +71,5 @@ app.on("activate", () => {
     createWindow();
   }
 });
-
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.

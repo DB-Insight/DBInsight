@@ -1,11 +1,13 @@
 import { IColumn, IDBDriver, ITableStatus } from "@/api/interfaces";
 import { ConnectionOptions } from "mysql2/promise";
 import { MySQL } from "./mysql";
+import EventEmitter from "events";
 
-export class MySQLDriver implements IDBDriver {
+export class MySQLDriver extends EventEmitter implements IDBDriver {
   private readonly credentials: ConnectionOptions;
   private readonly db: MySQL | null = null;
   constructor(credentials: ConnectionOptions) {
+    super();
     this.credentials = credentials;
     this.db = new MySQL(this.credentials);
   }
@@ -15,6 +17,8 @@ export class MySQLDriver implements IDBDriver {
   }
 
   async raw(sql: string) {
+    sql = sql.trim();
+    this.emit("raw", sql);
     return await this.db?.queryRows(sql);
   }
 
@@ -83,17 +87,19 @@ export class MySQLDriver implements IDBDriver {
 
   async queryTable(table: string, page: number, pageSize: number) {
     const columns = await this.showColumns(table);
+    const countRes = await this.raw(
+      `SELECT COUNT(1) AS total FROM \`${this.credentials.database}\`.\`${table}\``,
+    );
+    const total = countRes![0][0]["total"];
     const res: any = await this.raw(
-      `
-      SELECT ${columns.map((c) => c.field).join(",")} 
-      FROM \`${this.credentials.database}\`.\`${table}\` 
-      LIMIT ${pageSize} OFFSET ${pageSize * (page - 1)}
-      `,
+      `SELECT ${columns.map((c) => c.field).join(",")} FROM \`${this.credentials.database}\`.\`${table}\` LIMIT ${pageSize} OFFSET ${pageSize * (page - 1)}`,
     );
     const rows = res[0] ?? [];
     return {
       columns,
       rows,
+      total,
+      totalPage: Math.ceil(total / pageSize),
     };
   }
 }

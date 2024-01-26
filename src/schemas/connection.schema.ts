@@ -27,3 +27,10 @@ export const ConnectionSchema = z.object({
     .min(1, { message: "Password is required" }),
   database: z.string().optional(),
 });
+
+export const RawSchema = z.object({
+  sql: z
+    .string({ required_error: "SQL is required" })
+    .trim()
+    .min(1, { message: "SQL is required" }),
+});

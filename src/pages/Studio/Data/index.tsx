@@ -1,26 +1,11 @@
+import { Accordion } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useReactive } from "ahooks";
-import { FilePlus2Icon, RefreshCcwIcon, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
-import {
-  StaticTreeDataProvider,
-  Tree,
-  UncontrolledTreeEnvironment,
-} from "react-complex-tree";
+import { StaticTreeDataProvider } from "react-complex-tree";
 import Tables from "./Tables";
 import styles from "./index.module.css";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 export default () => {
   const state = useReactive<{
@@ -151,24 +136,7 @@ export default () => {
       </UncontrolledTreeEnvironment> */}
       <OverlayScrollbarsComponent defer>
         <Accordion type="multiple" className="w-full pb-10">
-          <AccordionItem value="item-1">
-            <AccordionTrigger>Is it accessible?</AccordionTrigger>
-            <AccordionContent>
-              <Tables />
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-2">
-            <AccordionTrigger>Is it styled?</AccordionTrigger>
-            <AccordionContent>
-              <Tables />
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-3">
-            <AccordionTrigger>Is it animated?</AccordionTrigger>
-            <AccordionContent>
-              <Tables />
-            </AccordionContent>
-          </AccordionItem>
+          <Tables filter={state.filter} />
         </Accordion>
       </OverlayScrollbarsComponent>
     </div>

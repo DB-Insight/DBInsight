@@ -1,5 +1,6 @@
 import { IDBDriver } from "@/api/interfaces";
 import * as crypto from "crypto";
+import { BrowserWindow } from "electron";
 import { ConnectionOptions as MySQLConnectionOptions } from "mysql2";
 import Container, { Service } from "typedi";
 import { CacheService } from ".";
@@ -12,6 +13,7 @@ interface ConnectionOptions {
 @Service()
 export class DBFactory {
   public readonly cache: CacheService = Container.get(CacheService);
+  public readonly main: BrowserWindow = Container.get("main");
 
   async create<K extends keyof ConnectionOptions>(
     type: K,
@@ -34,6 +36,9 @@ export class DBFactory {
 
     if (type === "mysql") {
       db = new MySQLDriver(params);
+      db.on("raw", (sql: string) => {
+        this.main.webContents.send("log", sql);
+      });
       await this.cache.set(key, db);
     }
 

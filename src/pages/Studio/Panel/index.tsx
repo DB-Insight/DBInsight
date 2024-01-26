@@ -1,11 +1,11 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import KeepAlive from "@/components/KeepAlive";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useReactive } from "ahooks";
 import { useEffect } from "react";
 import useResizeObserver from "use-resize-observer";
 import Grid from "./Grid";
-import styles from "./index.module.css";
-import KeepAlive from "@/components/KeepAlive";
 import Terminal from "./Terminal";
-import { useReactive } from "ahooks";
+import styles from "./index.module.css";
 
 export default () => {
   const state = useReactive<{
@@ -22,24 +22,24 @@ export default () => {
         value={state.tab}
         onValueChange={(e) => (state.tab = e)}
       >
-        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
+        <TabsList className="w-full justify-start rounded-none bg-transparent py-1">
           <TabsTrigger
             value="content"
-            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
             Content
           </TabsTrigger>
           <TabsTrigger
             value="result"
-            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
             Result
           </TabsTrigger>
           <TabsTrigger
-            value="history"
-            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            value="console"
+            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
-            History
+            Console
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -49,7 +49,7 @@ export default () => {
       <KeepAlive visible={state.tab === "result"}>
         <Grid />
       </KeepAlive>
-      <KeepAlive visible={state.tab === "history"}>
+      <KeepAlive visible={state.tab === "console"}>
         <Terminal />
       </KeepAlive>
     </div>

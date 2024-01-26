@@ -23,6 +23,14 @@ interface IElectronAPI {
   node: () => string;
   chrome: () => string;
   electron: () => string;
+  on: (
+    channel: string,
+    listener: (event: IpcRendererEvent, ...args: any[]) => void,
+  ) => void;
+  off: (
+    channel: string,
+    listener: (event: IpcRendererEvent, ...args: any[]) => void,
+  ) => void;
   trpc: (req: IpcRequest) => Promise<IpcResponse>;
 }
 

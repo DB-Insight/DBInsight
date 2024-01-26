@@ -1,5 +1,5 @@
 .container {
-  @apply flex flex-1 flex-col overflow-hidden p-2;
+  @apply flex flex-1 flex-col overflow-hidden px-2 pt-2;
   .title {
     @apply flex items-center gap-1;
     font-family: Monument-Bold;

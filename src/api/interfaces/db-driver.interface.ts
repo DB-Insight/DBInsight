@@ -1,4 +1,6 @@
-export interface IDBDriver {
+import EventEmitter from "events";
+
+export interface IDBDriver extends EventEmitter {
   ping(): Promise<boolean>;
   raw(sql: string): Promise<any>;
   getVersion(): Promise<string>;
