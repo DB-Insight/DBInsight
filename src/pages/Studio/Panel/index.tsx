@@ -22,22 +22,22 @@ export default () => {
         value={state.tab}
         onValueChange={(e) => (state.tab = e)}
       >
-        <TabsList className="w-full justify-start rounded-none bg-transparent py-1">
+        <TabsList className="w-full justify-start rounded-none bg-transparent py-1 font-normal">
           <TabsTrigger
             value="content"
-            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
             Content
           </TabsTrigger>
           <TabsTrigger
             value="result"
-            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
             Result
           </TabsTrigger>
           <TabsTrigger
             value="console"
-            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 font-semibold text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
             Console
           </TabsTrigger>

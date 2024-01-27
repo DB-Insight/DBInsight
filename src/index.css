@@ -1,9 +1,8 @@
 @import url("@/assets/fonts/font.css");
-@import url("@/assets/styles/overlayscrollbars.css");
+@import url("@/assets/styles/dockview.css");
 
 @import url("allotment/dist/style.css");
 @import url("react-complex-tree/lib/style.css");
-@import url("flexlayout-react/style/dark.css");
 @import url("xterm/css/xterm.css");
 
 @tailwind base;
@@ -79,6 +78,7 @@
       Segoe UI Emoji,
       Segoe UI Symbol,
       Noto Color Emoji;
+
     *::-webkit-scrollbar {
       width: 14px;
       height: 14px;
@@ -97,6 +97,8 @@
     .sash {
       z-index: 20;
     }
+
+    --box-shadow: #000 0 6px 6px -6px inset;
 
     --focus-border: theme("colors.primary.DEFAULT");
     --separator-border: theme("colors.border");

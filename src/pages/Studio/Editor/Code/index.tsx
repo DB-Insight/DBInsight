@@ -1,6 +1,7 @@
 import Editor, { useMonaco } from "@monaco-editor/react";
 import { useEffect } from "react";
 import ThemePro from "./themes/pro.json";
+import styles from "./index.module.css";
 
 export default () => {
   const monaco = useMonaco();
@@ -73,10 +74,12 @@ export default () => {
   }, [monaco]);
 
   return (
-    <Editor
-      defaultLanguage="sql"
-      defaultValue={`SELECT * FROM db;`}
-      theme="Pro"
-    />
+    <div className={styles.container}>
+      <Editor
+        defaultLanguage="sql"
+        defaultValue={`SELECT * FROM db;`}
+        theme="Pro"
+      />
+    </div>
   );
 };

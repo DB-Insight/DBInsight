@@ -1,0 +1,29 @@
+@import "./dockview-core.css";
+.tab .dockview-react-tab {
+  display: flex;
+  padding: 0px 8px;
+  align-items: center;
+  height: 100%;
+}
+.tab .dockview-react-tab .dockview-react-tab-title {
+  padding: 0px 8px;
+  flex-grow: 1;
+}
+.tab .dockview-react-tab .dv-react-tab-close-btn {
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.tab .dockview-react-tab .dv-react-tab-close-btn:hover {
+  border-radius: 2px;
+  background-color: var(--dv-icon-hover-background-color);
+}
+.tab.inactive-tab:not(:hover) .dv-react-tab-close-btn {
+  visibility: hidden;
+}
+.dockview-react-part {
+  height: 100%;
+  width: 100%;
+}

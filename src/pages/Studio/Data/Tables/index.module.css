@@ -1,15 +1,9 @@
-.header {
-  @apply flex items-center justify-between py-1 pr-[20px] text-xs text-gray-500;
-  .name {
-    @apply flex flex-1 select-none pl-1;
-  }
-}
-
 .container {
-  @apply box-border flex h-full max-h-[400px] w-full flex-1 flex-col overflow-y-auto overflow-x-hidden;
+  @apply box-border flex h-full w-full flex-1 flex-col overflow-y-auto overflow-x-hidden;
+  box-shadow: var(--box-shadow);
   .item {
     @apply flex cursor-pointer select-none items-center
-          justify-start gap-1 rounded-none px-2 py-1 hover:bg-slate-700;
+          justify-start gap-1 rounded-none px-4 py-1 hover:bg-slate-700;
     &.active {
       @apply bg-primary;
     }

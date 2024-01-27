@@ -1,46 +1,74 @@
 import { useReactive } from "ahooks";
-import { Layout, Model } from "flexlayout-react";
-import { useCallback, useMemo } from "react";
+import {
+  DockviewReact,
+  DockviewReadyEvent,
+  IDockviewPanelHeaderProps,
+  IDockviewPanelProps,
+} from "dockview";
+import { XIcon } from "lucide-react";
+import { useEffect } from "react";
 import Code from "./Code";
 
-export default () => {
-  const state = useReactive({
-    global: {},
-    borders: [],
-    layout: {
-      type: "row",
-      weight: 100,
-      children: [
-        {
-          type: "tabset",
-          weight: 50,
-          children: [
-            {
-              type: "tab",
-              name: "One",
-              component: "button",
-            },
-            {
-              type: "tab",
-              name: "Two",
-              component: "button",
-            },
-          ],
-        },
-      ],
-    },
-  });
-  const model = useMemo(() => {
-    return Model.fromJson({
-      borders: state.borders,
-      global: state.global,
-      layout: state.layout as any,
-    });
-  }, [state.borders, state.global, state.layout]);
-
-  const factory = useCallback((node: any) => {
-    let component = node.getComponent();
+const components = {
+  default: (props: IDockviewPanelProps<{ title: string }>) => {
     return <Code />;
-  }, []);
-  return <Layout model={model} factory={factory} />;
+  },
+};
+
+const HeaderComponent = ({ api, params }: IDockviewPanelHeaderProps) => {
+  const state = useReactive({
+    isActive: false,
+  });
+  useEffect(() => {
+    api.onDidActiveChange((e) => {
+      state.isActive = e.isActive;
+    });
+  }, [api]);
+  return (
+    <div className="group flex h-full w-full items-center justify-between pl-2 pr-1">
+      <div className="text-xs">{params.title}</div>
+      <XIcon
+        className={`${state.isActive ? "visible" : "invisible"} h-4 w-4 hover:bg-slate-600 group-hover:visible`}
+      />
+    </div>
+  );
+};
+
+export default () => {
+  const onReady = (event: DockviewReadyEvent) => {
+    event.api.addPanel({
+      id: "panel_1",
+      component: "default",
+      tabComponent: "header",
+      params: {
+        title: "Panel 1",
+      },
+    });
+
+    event.api.addPanel({
+      id: "panel_2",
+      component: "default",
+      tabComponent: "header",
+      params: {
+        title: "Panel 2",
+      },
+    });
+
+    event.api.addPanel({
+      id: "panel_3",
+      component: "default",
+      tabComponent: "header",
+      params: {
+        title: "Panel 3",
+      },
+    });
+  };
+  return (
+    <DockviewReact
+      className={"dockview-theme-abyss"}
+      components={components}
+      tabComponents={{ header: HeaderComponent }}
+      onReady={onReady}
+    />
+  );
 };

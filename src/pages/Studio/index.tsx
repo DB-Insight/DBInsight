@@ -67,7 +67,7 @@ export default () => {
     <div className={styles.container}>
       {target && (
         <>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pl-2">
             <div className={styles.title}>
               {target.alias}
               <HoverCard>
@@ -94,7 +94,7 @@ export default () => {
             <div className="flex flex-1 items-center justify-end gap-1">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button className="h-8" variant="outline" size="sm">
                     {target.database ? target.database : "Select database"}
                   </Button>
                 </DropdownMenuTrigger>
@@ -161,8 +161,12 @@ export default () => {
                 onValueChange={(e) => (state.tab = e)}
               >
                 <TabsList>
-                  <TabsTrigger value="data">Data</TabsTrigger>
-                  <TabsTrigger value="chat">Chat</TabsTrigger>
+                  <TabsTrigger className="py-1 text-xs" value="data">
+                    Data
+                  </TabsTrigger>
+                  <TabsTrigger className="py-1 text-xs" value="chat">
+                    Chat
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
               <KeepAlive visible={state.tab === "data"}>
@@ -175,8 +179,8 @@ export default () => {
             <Allotment.Pane className={styles.main}>
               <Allotment defaultSizes={[60, 40]} vertical>
                 <Allotment.Pane
-                  className={styles.layout}
-                  key="layout"
+                  className={styles.editor}
+                  key="editor"
                   snap
                   minSize={100}
                 >

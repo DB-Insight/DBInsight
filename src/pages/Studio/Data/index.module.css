@@ -1,3 +1,10 @@
 .container {
   @apply box-border flex h-full w-full flex-1 flex-col overflow-hidden;
+  .header {
+    @apply flex h-full items-center justify-between p-1 text-xs font-semibold text-gray-400;
+    background-color: #282c34;
+    .name {
+      @apply flex flex-1 select-none uppercase;
+    }
+  }
 }

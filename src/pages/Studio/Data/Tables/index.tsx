@@ -1,10 +1,6 @@
 import { trpc } from "@/api/client";
 import { ITable } from "@/api/interfaces";
-import {
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
@@ -13,27 +9,20 @@ import {
 } from "@/components/ui/tooltip";
 import connectionModel from "@/models/connection.model";
 import { useReactive } from "ahooks";
-import {
-  ChevronRightIcon,
-  FilePlus2Icon,
-  RefreshCcwIcon,
-  TableIcon,
-} from "lucide-react";
+import { SearchIcon, TableIcon } from "lucide-react";
 import { useEffect } from "react";
 import Highlighter from "react-highlight-words";
 import { useSnapshot } from "valtio";
 import styles from "./index.module.css";
 
-interface TablesProps {
-  filter: string;
-}
-
-export default ({ filter }: TablesProps) => {
+export default () => {
   const { target, table } = useSnapshot(connectionModel.state);
   const state = useReactive<{
     tables: ITable[];
+    filter: string;
   }>({
     tables: [],
+    filter: "",
   });
 
   useEffect(() => {
@@ -50,72 +39,43 @@ export default ({ filter }: TablesProps) => {
   };
 
   return (
-    <AccordionItem value="tables">
-      <AccordionTrigger asChild>
-        <div className={styles.header}>
-          <ChevronRightIcon className="h-4 w-4 shrink-0 transition-transform duration-200" />
-          <div className={styles.name}>TABLES</div>
-          <div className="flex items-center justify-end gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <FilePlus2Icon
-                    className="h-4 w-4 hover:text-gray-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  />
-                </TooltipTrigger>
-                <TooltipContent>Create a new table</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <RefreshCcwIcon
-                    className="h-4 w-4 cursor-pointer hover:text-gray-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      loadTables();
-                    }}
-                  />
-                </TooltipTrigger>
-                <TooltipContent>Reload tables</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent>
-        <div className={styles.container}>
-          {state.tables
-            .filter((t) => t.name.includes(filter))
-            .map((t) => (
-              <TooltipProvider key={t.name}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={`${styles.item} ${table === t.name ? styles.active : null}`}
-                      onClick={() => {
-                        connectionModel.changeTable(t.name);
-                      }}
-                    >
-                      <TableIcon className="h-4 w-4 min-w-4" />
-                      <div className={styles.name}>
-                        <Highlighter
-                          searchWords={[filter]}
-                          autoEscape={true}
-                          textToHighlight={t.name}
-                        />
-                      </div>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>{t.name}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ))}
-        </div>
-      </AccordionContent>
-    </AccordionItem>
+    <div className={styles.container}>
+      {/* <div className="relative">
+        <SearchIcon className="absolute bottom-0 left-8 top-0 my-auto h-4 w-4 text-gray-500" />
+        <Input
+          className="h-8 rounded-md border-none pl-8 pr-4"
+          type="text"
+          placeholder="Filter"
+          value={state.filter}
+          onChange={(event) => (state.filter = event.target.value)}
+        />
+      </div> */}
+      {state.tables
+        .filter((t) => t.name.includes(state.filter))
+        .map((t) => (
+          <TooltipProvider key={t.name}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className={`${styles.item} ${table === t.name ? styles.active : null}`}
+                  onClick={() => {
+                    connectionModel.changeTable(t.name);
+                  }}
+                >
+                  <TableIcon className="h-4 w-4 min-w-4" />
+                  <div className={styles.name}>
+                    <Highlighter
+                      searchWords={[state.filter]}
+                      autoEscape={true}
+                      textToHighlight={t.name}
+                    />
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{t.name}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ))}
+    </div>
   );
 };
