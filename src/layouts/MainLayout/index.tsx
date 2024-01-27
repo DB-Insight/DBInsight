@@ -1,4 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
+import ThemePro from "@/themes/monaco/pro.json";
+import { useMonaco } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import { Offscreen } from "react-stillness-component";
@@ -8,9 +10,18 @@ import styles from "./index.module.css";
 export default () => {
   const location = useLocation();
   const outlet = useOutlet();
+  const monaco = useMonaco();
 
   const [outlets, setOutlets] = useState<any>([]);
   const locationPathname = location.pathname;
+
+  useEffect(() => {
+    if (monaco) {
+      // @ts-ignore
+      monaco.editor.defineTheme("Pro", ThemePro);
+      monaco.editor.setTheme("Pro");
+    }
+  }, [monaco]);
 
   useEffect(() => {
     const result = outlets.some((o: any) => o.pathname === locationPathname);

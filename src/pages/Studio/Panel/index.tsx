@@ -4,6 +4,7 @@ import { useReactive } from "ahooks";
 import { useEffect } from "react";
 import useResizeObserver from "use-resize-observer";
 import Grid from "./Grid";
+import Info from "./Info";
 import Terminal from "./Terminal";
 import styles from "./index.module.css";
 
@@ -30,10 +31,10 @@ export default () => {
             Content
           </TabsTrigger>
           <TabsTrigger
-            value="result"
-            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            value="info"
+            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
-            Result
+            Info
           </TabsTrigger>
           <TabsTrigger
             value="console"
@@ -41,10 +42,19 @@ export default () => {
           >
             Console
           </TabsTrigger>
+          <TabsTrigger
+            value="result"
+            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
+          >
+            Result
+          </TabsTrigger>
         </TabsList>
       </Tabs>
       <KeepAlive visible={state.tab === "content"}>
         <Grid />
+      </KeepAlive>
+      <KeepAlive visible={state.tab === "info"}>
+        <Info />
       </KeepAlive>
       <KeepAlive visible={state.tab === "result"}>
         <Grid />

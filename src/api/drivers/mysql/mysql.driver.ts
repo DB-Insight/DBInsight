@@ -1,7 +1,7 @@
 import { IColumn, IDBDriver, ITableStatus } from "@/api/interfaces";
+import EventEmitter from "events";
 import { ConnectionOptions } from "mysql2/promise";
 import { MySQL } from "./mysql";
-import EventEmitter from "events";
 
 export class MySQLDriver extends EventEmitter implements IDBDriver {
   private readonly credentials: ConnectionOptions;
@@ -68,7 +68,7 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
     const res: any = await this.raw(
       `SHOW CREATE TABLE \`${this.credentials.database}\`.\`${table}\``,
     );
-    return res[0][0];
+    return res[0][0]["Create Table"];
   }
 
   async showColumns(table: string): Promise<IColumn[]> {
