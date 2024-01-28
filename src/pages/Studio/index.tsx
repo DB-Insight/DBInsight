@@ -65,6 +65,8 @@ import Editor from "./Editor";
 import Panel from "./Panel";
 import styles from "./index.module.css";
 
+const SYSTEM_DBS = ["information_schema", "mysql", "performance_schema", "sys"];
+
 export default () => {
   const nav = useNavigate();
   const { target } = useSnapshot(connectionModel.state);
@@ -134,7 +136,8 @@ export default () => {
     if (target) {
       const res = await trpc.connection.showDatabases.query(target);
       if (res.status) {
-        state.databases = res.data ?? [];
+        state.databases =
+          res.data.filter((o: IDatabase) => !SYSTEM_DBS.includes(o.name)) ?? [];
       }
 
       const variableRes = await Promise.all([
@@ -326,6 +329,17 @@ export default () => {
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Databases</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={target.database ?? ""}
+                    onValueChange={(e) => connectionModel.changeDatabase(e)}
+                  >
+                    {SYSTEM_DBS.map((d) => (
+                      <DropdownMenuRadioItem key={d} value={d}>
+                        {d}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
                     value={target.database ?? ""}
