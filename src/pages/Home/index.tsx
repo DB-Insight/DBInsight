@@ -68,12 +68,12 @@ import {
 import { nanoid } from "nanoid";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { useCopyToClipboard } from "react-use";
 import { toast } from "sonner";
 import { useSnapshot } from "valtio";
 import * as z from "zod";
 import styles from "./index.module.css";
-import { useNavigate } from "react-router-dom";
 
 const DatabaseTypeMaps: Record<string, string> = {
   mysql: "MySQL",

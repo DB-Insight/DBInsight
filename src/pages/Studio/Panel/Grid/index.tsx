@@ -87,7 +87,7 @@ export default () => {
 
   const loadList = useCallback(async () => {
     if (!!target?.database && !!table) {
-      const res = await trpc.table.list.query({
+      const res = await trpc.connection.queryTable.query({
         table,
         page: state.page,
         pageSize: state.pageSize,
@@ -227,8 +227,8 @@ export default () => {
                 value={state.pageSize.toString()}
                 onValueChange={(e) => (state.pageSize = Number(e))}
               >
-                <SelectTrigger>
-                  <SelectValue className="p-0" />
+                <SelectTrigger className="h-6">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="100">100</SelectItem>

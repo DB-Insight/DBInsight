@@ -34,3 +34,17 @@ export const RawSchema = z.object({
     .trim()
     .min(1, { message: "SQL is required" }),
 });
+
+export const VariableSchema = z.object({
+  variable: z
+    .string({ required_error: "Variable is required" })
+    .trim()
+    .min(1, { message: "Variable is required" }),
+});
+
+export const GetCollationSchema = z.object({
+  characterSet: z
+    .string({ required_error: "CharacterSet is required" })
+    .trim()
+    .min(1, { message: "CharacterSet is required" }),
+});

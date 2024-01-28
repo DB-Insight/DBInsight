@@ -94,9 +94,6 @@
     *::-webkit-scrollbar-thumb:hover {
       background: rgba(121, 121, 121, 0.2);
     }
-    .sash {
-      z-index: 20;
-    }
 
     --box-shadow: #000 0 6px 6px -6px inset;
 

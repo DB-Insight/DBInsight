@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import useResizeObserver from "use-resize-observer";
 import Grid from "./Grid";
 import Info from "./Info";
+import Structure from "./Structure";
 import Terminal from "./Terminal";
 import styles from "./index.module.css";
 
@@ -31,6 +32,12 @@ export default () => {
             Content
           </TabsTrigger>
           <TabsTrigger
+            value="structure"
+            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
+          >
+            Structure
+          </TabsTrigger>
+          <TabsTrigger
             value="info"
             className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
@@ -52,6 +59,9 @@ export default () => {
       </Tabs>
       <KeepAlive visible={state.tab === "content"}>
         <Grid />
+      </KeepAlive>
+      <KeepAlive visible={state.tab === "structure"}>
+        <Structure />
       </KeepAlive>
       <KeepAlive visible={state.tab === "info"}>
         <Info />

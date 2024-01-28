@@ -1,7 +1,15 @@
 import { trpc } from "@/api/client";
-import { IDatabase } from "@/api/interfaces";
+import { ICharacterSet, ICollation, IDatabase } from "@/api/interfaces";
 import KeepAlive from "@/components/KeepAlive";
+import SearchableSelect from "@/components/SearchableSelect";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +22,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -25,12 +42,23 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import connectionModel from "@/models/connection.model";
+import { CreateDatabaseSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useReactive } from "ahooks";
 import { Allotment } from "allotment";
-import { InfoIcon, LogOutIcon, RocketIcon, UserIcon } from "lucide-react";
+import {
+  InfoIcon,
+  LogOutIcon,
+  RocketIcon,
+  RotateCwIcon,
+  UserIcon,
+} from "lucide-react";
 import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useSnapshot } from "valtio";
+import * as z from "zod";
 import Chat from "./Chat";
 import Data from "./Data";
 import Editor from "./Editor";
@@ -41,18 +69,66 @@ export default () => {
   const nav = useNavigate();
   const { target } = useSnapshot(connectionModel.state);
   const state = useReactive<{
+    open: boolean;
     tab: string;
     filter: string;
     databases: IDatabase[];
+    characterSets: ICharacterSet[];
+    collations: ICollation[];
+    encoding: string;
+    collation: string;
   }>({
+    open: false,
     tab: "data",
     filter: "",
     databases: [],
+    characterSets: [],
+    collations: [],
+    encoding: "",
+    collation: "",
   });
 
+  const form = useForm<z.infer<typeof CreateDatabaseSchema>>({
+    resolver: zodResolver(CreateDatabaseSchema),
+    defaultValues: {
+      name: "",
+      encoding: state.encoding,
+      collation: state.collation,
+    },
+  });
+  const watchEncoding = form.watch("encoding", state.encoding);
+
   useEffect(() => {
+    getCharacterSets();
     loadDatebases();
   }, [target]);
+
+  useEffect(() => {
+    if (!!watchEncoding) {
+      getCollations(watchEncoding);
+    }
+  }, [watchEncoding]);
+
+  const getCharacterSets = async () => {
+    if (target) {
+      const res = await trpc.connection.getCharacterSets.query(target);
+      if (res.status) {
+        state.characterSets = res.data ?? [];
+      }
+    }
+  };
+
+  const getCollations = async (encoding: string) => {
+    if (target && encoding) {
+      const res = await trpc.connection.getCollations.query({
+        characterSet: encoding,
+        ...target,
+      });
+      if (res.status) {
+        state.collations = res.data ?? [];
+      }
+    }
+  };
 
   const loadDatebases = async () => {
     if (target) {
@@ -60,6 +136,54 @@ export default () => {
       if (res.status) {
         state.databases = res.data ?? [];
       }
+
+      const variableRes = await Promise.all([
+        await trpc.connection.showVariables
+          .query({
+            variable: "character_set_server",
+            ...target,
+          })
+          .then((res) => res.data),
+        await trpc.connection.showVariables
+          .query({
+            variable: "collation_server",
+            ...target,
+          })
+          .then((res) => res.data),
+      ]);
+      state.encoding = variableRes[0];
+      state.collation = variableRes[1];
+      form.setValue("encoding", state.encoding);
+      form.setValue("collation", state.collation);
+    }
+  };
+
+  const onSubmit = async (data: z.infer<typeof CreateDatabaseSchema>) => {
+    try {
+      if (target) {
+        const res = await trpc.connection.createDatabase.mutate({
+          ...target,
+          ...data,
+        });
+        if (res.status) {
+          toast.success("Successfully created", { duration: 2000 });
+          await loadDatebases();
+          state.open = false;
+        } else {
+          const data = JSON.parse(res.data);
+          toast.error(`${data.code}:${data.errno}`, {
+            description: data.message,
+            duration: 2000,
+          });
+        }
+      }
+    } catch (err: any) {
+      console.log(err);
+      const data = JSON.parse(err.message);
+      toast.error(`${data[0]?.code}`, {
+        description: data[0].message,
+        duration: 2000,
+      });
     }
   };
 
@@ -67,6 +191,91 @@ export default () => {
     <div className={styles.container}>
       {target && (
         <>
+          <Dialog open={state.open} onOpenChange={(e) => (state.open = e)}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Create a new database</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs text-slate-300">
+                        Database Name*
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter Database Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="encoding"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-xs text-slate-300">
+                        Database Encoding (Default {state.encoding})
+                      </FormLabel>
+                      <FormControl>
+                        <SearchableSelect
+                          placeholder="Database Encoding"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={state.characterSets.map((o) => ({
+                            value: o.characterSetName,
+                            label: o.characterSetName,
+                          }))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="collation"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-xs text-slate-300">
+                        Database Collation (Default {state.collation})
+                      </FormLabel>
+                      <FormControl>
+                        <SearchableSelect
+                          placeholder="Database Collation"
+                          value={field.value}
+                          onChange={field.onChange}
+                          options={state.collations.map((o) => ({
+                            value: o.collationName,
+                            label: o.collationName,
+                          }))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </Form>
+              <DialogFooter>
+                <Button
+                  disabled={
+                    !form.formState.isValid || form.formState.isSubmitting
+                  }
+                  onClick={form.handleSubmit((values) => {
+                    onSubmit(values);
+                  })}
+                >
+                  {form.formState.isSubmitting && (
+                    <RotateCwIcon className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Create
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <div className="flex items-center justify-between pl-2">
             <div className={styles.title}>
               {target.alias}
@@ -107,7 +316,13 @@ export default () => {
                     >
                       Reload databases
                     </DropdownMenuItem>
-                    <DropdownMenuItem>Create a new database</DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        state.open = true;
+                      }}
+                    >
+                      Create a new database
+                    </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Databases</DropdownMenuLabel>
@@ -177,7 +392,7 @@ export default () => {
               </KeepAlive>
             </Allotment.Pane>
             <Allotment.Pane className={styles.main}>
-              <Allotment defaultSizes={[60, 40]} vertical>
+              <Allotment defaultSizes={[30, 70]} vertical>
                 <Allotment.Pane
                   className={styles.editor}
                   key="editor"

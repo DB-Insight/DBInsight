@@ -26,12 +26,12 @@ export default () => {
 
   const loadInfo = useCallback(async () => {
     if (target && table) {
-      const statusRes = await trpc.table.showTableStatus.query({
+      const statusRes = await trpc.connection.showTableStatus.query({
         table,
         ...target,
       });
       state.status = statusRes.data;
-      const infoRes = await trpc.table.showCreateTable.query({
+      const infoRes = await trpc.connection.showCreateTable.query({
         table,
         ...target,
       });
@@ -133,14 +133,16 @@ export default () => {
         </>
       )}
       <Separator className="my-4" />
-      <div className="flex flex-1 flex-col">
-        <div className="text-nowrap">Comments:</div>
-        <div className="box-border flex-1">
-          <SyntaxHighlighter style={oneDark}>
-            {state.status?.comment ?? ""}
-          </SyntaxHighlighter>
+      {state.status?.comment && (
+        <div className="flex flex-1 flex-col">
+          <div className="text-nowrap">Comments:</div>
+          <div className="box-border flex-1">
+            <SyntaxHighlighter style={oneDark}>
+              {state.status?.comment ?? ""}
+            </SyntaxHighlighter>
+          </div>
         </div>
-      </div>
+      )}
       <div className="flex flex-1 flex-col">
         <div className="text-nowrap">Create syntax:</div>
         <div className="box-border flex-1">

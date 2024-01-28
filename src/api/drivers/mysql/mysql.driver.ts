@@ -1,4 +1,4 @@
-import { IColumn, IDBDriver, ITableStatus } from "@/api/interfaces";
+import { IColumn, IDBDriver, IIndex, ITableStatus } from "@/api/interfaces";
 import EventEmitter from "events";
 import { ConnectionOptions } from "mysql2/promise";
 import { MySQL } from "./mysql";
@@ -25,6 +25,37 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
   async getVersion() {
     const res: any = await this.raw(`SELECT VERSION() as version`);
     return res[0][0].version;
+  }
+
+  async getCharacterSets() {
+    const res: any = await this.raw(
+      "SELECT * FROM `information_schema`.`character_sets` ORDER BY `character_set_name` ASC",
+    );
+    return res[0].map((o: any) => ({
+      characterSetName: o.CHARACTER_SET_NAME,
+      defaultCollateName: o.DEFAULT_COLLATE_NAME,
+      description: o.DESCRIPTION,
+      maxlen: o.MAXLEN,
+    }));
+  }
+  async getCollations(characterSet: string) {
+    const res: any = await this.raw(
+      `SELECT * FROM \`information_schema\`.\`collations\` WHERE character_set_name = '${characterSet}' ORDER BY \`collation_name\` ASC`,
+    );
+    return res[0].map((o: any) => ({
+      characterSetName: o.CHARACTER_SET_NAME,
+      collationName: o.COLLATION_NAME,
+      id: o.ID,
+      isCompiled: o.IS_COMPILED,
+      isDefault: o.IS_DEFAULT,
+      padAttribute: o.PAD_ATTRIBUTE,
+      sortlen: o.SORTLEN,
+    }));
+  }
+
+  async showVariables(name: string) {
+    const res: any = await this.raw(`SHOW VARIABLES LIKE '${name}'`);
+    return res[0].find((o: any) => o.Variable_name === name)?.Value;
   }
 
   async showDatabases() {
@@ -82,6 +113,28 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
       key: o.Key,
       default: o.Default,
       extra: o.Extra,
+    }));
+  }
+
+  async showIndex(table: string): Promise<IIndex[]> {
+    const res: any = await this.raw(
+      `SHOW INDEX FROM \`${this.credentials.database}\`.\`${table}\``,
+    );
+    return res[0].map((o: any) => ({
+      cardinality: o.Cardinality,
+      collation: o.Collation,
+      columnName: o.Column_name,
+      comment: o.Comment,
+      expression: o.Expression,
+      indexComment: o.Index_comment,
+      indexType: o.Index_type,
+      keyName: o.Key_name,
+      nonUnique: o.Non_unique,
+      packed: o.Packed,
+      seqInIndex: o.Seq_in_index,
+      subPart: o.Sub_part,
+      table: o.Table,
+      visible: o.Visible,
     }));
   }
 

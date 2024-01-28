@@ -4,11 +4,15 @@ export interface IDBDriver extends EventEmitter {
   ping(): Promise<boolean>;
   raw(sql: string): Promise<any>;
   getVersion(): Promise<string>;
+  getCharacterSets(): Promise<ICharacterSet[]>;
+  getCollations(characterSet: string): Promise<ICollation[]>;
+  showVariables(name: string): Promise<string>;
   showDatabases(): Promise<IDatabase[]>;
   showTables(): Promise<ITable[]>;
   showTableStatus(table: string): Promise<ITableStatus>;
   showCreateTable(table: string): Promise<string>;
   showColumns(table: string): Promise<IColumn[]>;
+  showIndex(table: string): Promise<IIndex[]>;
   queryTable(
     table: string,
     page: number,
@@ -55,4 +59,38 @@ export interface IColumn {
   key: string;
   default: string;
   extra: string;
+}
+
+export interface IIndex {
+  cardinality: number;
+  collation: string;
+  columnName: string;
+  comment: string;
+  expression: null | string;
+  indexComment: string;
+  indexType: string;
+  keyName: string;
+  nonUnique: number;
+  isNull: string;
+  packed: null | string;
+  sequenceInIndex: number;
+  subPart: null | string;
+  table: string;
+  visible: string;
+}
+
+export interface ICharacterSet {
+  characterSetName: string;
+  defaultCollateName: string;
+  description: string;
+  maxlen: number;
+}
+export interface ICollation {
+  characterSetName: string;
+  collationName: string;
+  id: number;
+  isCompiled: string;
+  isDefault: string;
+  padAttribute: string;
+  sortlen: number;
 }
