@@ -3,6 +3,7 @@ import { publicProcedure, router } from "@/api/core/server";
 import {
   ConnectionSchema,
   CreateDatabaseSchema,
+  CreateTableSchema,
   GetCollationSchema,
   QueryTableSchema,
   RawSchema,
@@ -73,6 +74,19 @@ export const connectionRouter = router({
         const factory = ctx.ioc.get(DBFactory);
         const db = await factory.create(type, connection);
         return Response.ok(await db.getCollations(characterSet));
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  getEngines: publicProcedure
+    .input(ConnectionSchema)
+    .query(async ({ ctx, input }) => {
+      try {
+        const { type, ...connection } = input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        return Response.ok(await db.getEngines());
       } catch (err) {
         console.error(err);
         return Response.fail(JSON.stringify(err));
@@ -197,7 +211,29 @@ export const connectionRouter = router({
         const factory = ctx.ioc.get(DBFactory);
         const db = await factory.create(type, connection);
         const res = await db.raw(
-          `CREATE DATABASE \`${name}\` DEFAULT CHARACTER SET = \`${encoding}\` DEFAULT COLLATE = \`${collation}\``,
+          `CREATE DATABASE \`${name}\` 
+          ${encoding ? `DEFAULT CHARACTER SET = \`${encoding}\`` : ""} 
+          ${collation ? `DEFAULT COLLATE = \`${collation}\`` : ""}`,
+        );
+        return Response.ok(res);
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  createTable: publicProcedure
+    .input(ConnectionSchema.merge(CreateTableSchema))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { type, name, encoding, collation, engine, ...connection } =
+          input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        const res = await db.raw(
+          `CREATE TABLE \`${name}\` (id INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT) 
+          ${encoding ? `DEFAULT CHARACTER SET = \`${encoding}\`` : ""} 
+          ${collation ? `DEFAULT COLLATE = \`${collation}\`` : ""} 
+          ${engine ? `ENGINE = \`${engine}\`` : ""}`,
         );
         return Response.ok(res);
       } catch (err) {

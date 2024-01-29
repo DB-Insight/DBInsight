@@ -1,5 +1,5 @@
 import { trpc } from "@/api/client";
-import { ICharacterSet, ICollation, IDatabase } from "@/api/interfaces";
+import ConfirmPopover from "@/components/ConfirmPopover";
 import KeepAlive from "@/components/KeepAlive";
 import SearchableSelect from "@/components/SearchableSelect";
 import { Button } from "@/components/ui/button";
@@ -35,13 +35,8 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import connectionModel from "@/models/connection.model";
+import connectionModel, { SYSTEM_DBS } from "@/models/connection.model";
 import { CreateDatabaseSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useReactive } from "ahooks";
@@ -65,101 +60,44 @@ import Editor from "./Editor";
 import Panel from "./Panel";
 import styles from "./index.module.css";
 
-const SYSTEM_DBS = ["information_schema", "mysql", "performance_schema", "sys"];
-
 export default () => {
   const nav = useNavigate();
-  const { target } = useSnapshot(connectionModel.state);
+  const { target, databases, characterSets, collations } = useSnapshot(
+    connectionModel.state,
+  );
   const state = useReactive<{
     open: boolean;
     tab: string;
     filter: string;
-    databases: IDatabase[];
-    characterSets: ICharacterSet[];
-    collations: ICollation[];
-    encoding: string;
-    collation: string;
   }>({
     open: false,
     tab: "data",
     filter: "",
-    databases: [],
-    characterSets: [],
-    collations: [],
-    encoding: "",
-    collation: "",
   });
 
   const form = useForm<z.infer<typeof CreateDatabaseSchema>>({
     resolver: zodResolver(CreateDatabaseSchema),
     defaultValues: {
       name: "",
-      encoding: state.encoding,
-      collation: state.collation,
     },
   });
-  const watchEncoding = form.watch("encoding", state.encoding);
-
-  useEffect(() => {
-    getCharacterSets();
-    loadDatebases();
-  }, [target]);
+  const watchEncoding = form.watch("encoding");
 
   useEffect(() => {
     if (!!watchEncoding) {
-      getCollations(watchEncoding);
+      connectionModel.getCollations(watchEncoding);
     }
   }, [watchEncoding]);
 
-  const getCharacterSets = async () => {
-    if (target) {
-      const res = await trpc.connection.getCharacterSets.query(target);
-      if (res.status) {
-        state.characterSets = res.data ?? [];
-      }
-    }
-  };
+  useEffect(() => {
+    connectionModel.loadDatebases();
+    connectionModel.getCharacterSets();
+    connectionModel.getEngines();
+  }, [target]);
 
-  const getCollations = async (encoding: string) => {
-    if (target && encoding) {
-      const res = await trpc.connection.getCollations.query({
-        characterSet: encoding,
-        ...target,
-      });
-      if (res.status) {
-        state.collations = res.data ?? [];
-      }
-    }
-  };
-
-  const loadDatebases = async () => {
-    if (target) {
-      const res = await trpc.connection.showDatabases.query(target);
-      if (res.status) {
-        state.databases =
-          res.data.filter((o: IDatabase) => !SYSTEM_DBS.includes(o.name)) ?? [];
-      }
-
-      const variableRes = await Promise.all([
-        await trpc.connection.showVariables
-          .query({
-            variable: "character_set_server",
-            ...target,
-          })
-          .then((res) => res.data),
-        await trpc.connection.showVariables
-          .query({
-            variable: "collation_server",
-            ...target,
-          })
-          .then((res) => res.data),
-      ]);
-      state.encoding = variableRes[0];
-      state.collation = variableRes[1];
-      form.setValue("encoding", state.encoding);
-      form.setValue("collation", state.collation);
-    }
-  };
+  useEffect(() => {
+    connectionModel.loadTables();
+  }, [target?.database]);
 
   const onSubmit = async (data: z.infer<typeof CreateDatabaseSchema>) => {
     try {
@@ -169,8 +107,9 @@ export default () => {
           ...data,
         });
         if (res.status) {
+          form.reset();
           toast.success("Successfully created", { duration: 2000 });
-          await loadDatebases();
+          await connectionModel.loadDatebases();
           state.open = false;
         } else {
           const data = JSON.parse(res.data);
@@ -221,14 +160,14 @@ export default () => {
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel className="text-xs text-slate-300">
-                        Database Encoding (Default {state.encoding})
+                        Database Encoding
                       </FormLabel>
                       <FormControl>
                         <SearchableSelect
                           placeholder="Database Encoding"
                           value={field.value}
                           onChange={field.onChange}
-                          options={state.characterSets.map((o) => ({
+                          options={characterSets.map((o) => ({
                             value: o.characterSetName,
                             label: o.characterSetName,
                           }))}
@@ -244,14 +183,14 @@ export default () => {
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel className="text-xs text-slate-300">
-                        Database Collation (Default {state.collation})
+                        Database Collation
                       </FormLabel>
                       <FormControl>
                         <SearchableSelect
                           placeholder="Database Collation"
                           value={field.value}
                           onChange={field.onChange}
-                          options={state.collations.map((o) => ({
+                          options={collations.map((o) => ({
                             value: o.collationName,
                             label: o.collationName,
                           }))}
@@ -310,11 +249,11 @@ export default () => {
                     {target.database ? target.database : "Select database"}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
+                <DropdownMenuContent className="mr-4 w-56">
                   <DropdownMenuGroup>
                     <DropdownMenuItem
                       onClick={() => {
-                        loadDatebases();
+                        connectionModel.loadDatebases();
                       }}
                     >
                       Reload databases
@@ -345,7 +284,7 @@ export default () => {
                     value={target.database ?? ""}
                     onValueChange={(e) => connectionModel.changeDatabase(e)}
                   >
-                    {state.databases.map((d) => (
+                    {databases.map((d) => (
                       <DropdownMenuRadioItem key={d.name} value={d.name}>
                         {d.name}
                       </DropdownMenuRadioItem>
@@ -353,39 +292,23 @@ export default () => {
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button className="h-8 w-8 p-0 lg:flex" variant="ghost">
-                    <LogOutIcon className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-200" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="mr-4 flex flex-col p-4"
-                  side="bottom"
-                >
-                  <div className="mt-2 text-sm">
-                    Are you sure you want to disconnect?
-                  </div>
-                  <div className="mt-4 flex justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        connectionModel.disconnect();
-                        nav("/", { replace: true });
-                      }}
-                    >
-                      Yes
-                    </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <ConfirmPopover
+                title="Are you sure you want to disconnect?"
+                onConfirm={() => {
+                  connectionModel.disconnect();
+                  nav("/", { replace: true });
+                }}
+              >
+                <Button className="mr-2 h-8 w-8 p-0 lg:flex" variant="ghost">
+                  <LogOutIcon className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-200" />
+                </Button>
+              </ConfirmPopover>
             </div>
           </div>
           <Allotment className={styles.content} defaultSizes={[25, 75]}>
-            <Allotment.Pane className={styles.side}>
+            <Allotment.Pane className={styles.side} snap minSize={100}>
               <Tabs
-                className="mb-1 pr-[20px] text-center"
+                className="mb-1 text-center"
                 value={state.tab}
                 onValueChange={(e) => (state.tab = e)}
               >

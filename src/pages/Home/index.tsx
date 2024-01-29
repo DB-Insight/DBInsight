@@ -1,4 +1,5 @@
 import { trpc } from "@/api/client";
+import ConfirmPopover from "@/components/ConfirmPopover";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -299,33 +300,20 @@ export default () => {
             >
               <FilePenLineIcon className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-200" />
             </Button>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button className="h-8 w-8 p-0 lg:flex" variant="ghost">
-                  <Trash2Icon className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-200" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="flex flex-col p-4" side="left">
-                <div className="mt-2 text-sm">
-                  Are you sure you want to delete?
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      await connectionModel.remove(data);
-                      table.resetRowSelection();
-                      toast.success("Deleted", {
-                        duration: 2000,
-                      });
-                    }}
-                  >
-                    Yes
-                  </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <ConfirmPopover
+              title="Are you sure you want to delete?"
+              onConfirm={async () => {
+                await connectionModel.remove(data);
+                table.resetRowSelection();
+                toast.success("Deleted", {
+                  duration: 2000,
+                });
+              }}
+            >
+              <Button className="h-8 w-8 p-0 lg:flex" variant="ghost">
+                <Trash2Icon className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-200" />
+              </Button>
+            </ConfirmPopover>
           </div>
         );
       },

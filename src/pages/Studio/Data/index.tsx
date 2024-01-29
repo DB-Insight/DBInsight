@@ -4,6 +4,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import connectionModel from "@/models/connection.model";
 import { useReactive } from "ahooks";
 import {
   IPaneviewPanelProps,
@@ -17,16 +18,16 @@ import {
   RefreshCcwIcon,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useSnapshot } from "valtio";
 import Tables from "./Tables";
 import styles from "./index.module.css";
 
 const components = {
-  default: (props: IPaneviewPanelProps<{ title: string }>) => {
-    return <Tables />;
-  },
+  tablePanel: Tables,
 };
 
-const HeaderComponent = (props: IPaneviewPanelProps<{ title: string }>) => {
+const TableHeaderComponent = (props: IPaneviewPanelProps<any>) => {
+  const { target } = useSnapshot(connectionModel.state);
   const state = useReactive({
     expanded: props.api.isExpanded,
   });
@@ -38,13 +39,11 @@ const HeaderComponent = (props: IPaneviewPanelProps<{ title: string }>) => {
       disposable.dispose();
     };
   }, []);
-
   const onClick = () => {
     props.api.setExpanded(!state.expanded);
   };
-
   return (
-    <div className={styles.header} onClick={onClick}>
+    <div className={`${styles.header} group`} onClick={onClick}>
       {state.expanded ? (
         <ChevronDownIcon className="h-4 w-4" />
       ) : (
@@ -56,9 +55,12 @@ const HeaderComponent = (props: IPaneviewPanelProps<{ title: string }>) => {
           <Tooltip>
             <TooltipTrigger asChild>
               <FilePlus2Icon
-                className="h-4 w-4 hover:text-gray-200"
+                className="invisible h-4 w-4 hover:text-gray-200 group-hover:visible"
                 onClick={(e) => {
                   e.stopPropagation();
+                  props.api.updateParameters({
+                    open: true,
+                  });
                 }}
               />
             </TooltipTrigger>
@@ -69,9 +71,10 @@ const HeaderComponent = (props: IPaneviewPanelProps<{ title: string }>) => {
           <Tooltip>
             <TooltipTrigger asChild>
               <RefreshCcwIcon
-                className="h-4 w-4 cursor-pointer hover:text-gray-200"
+                className="invisible h-4 w-4 cursor-pointer hover:text-gray-200 group-hover:visible"
                 onClick={(e) => {
                   e.stopPropagation();
+                  connectionModel.loadTables();
                 }}
               />
             </TooltipTrigger>
@@ -83,37 +86,32 @@ const HeaderComponent = (props: IPaneviewPanelProps<{ title: string }>) => {
   );
 };
 
+const headerComponents = {
+  tableHeader: TableHeaderComponent,
+};
+
 export default () => {
   const onReady = (event: PaneviewReadyEvent) => {
-    event.api.addPanel({
+    const tablePanel = event.api.addPanel({
       id: "tables",
       title: "tables",
-      headerComponent: "header",
-      component: "default",
+      component: "tablePanel",
+      headerComponent: "tableHeader",
+      params: {
+        open: false,
+        onOpenChange: (open: boolean) => {
+          tablePanel.api.updateParameters({ open });
+        },
+      },
     });
-
-    event.api.addPanel({
-      id: "queries",
-      title: "queries",
-      headerComponent: "header",
-      component: "default",
-    });
-
-    event.api.addPanel({
-      id: "views",
-      title: "views",
-      headerComponent: "header",
-      component: "default",
-    });
+    tablePanel.setExpanded(true);
   };
   return (
     <div className={styles.container}>
       <PaneviewReact
         className={"dockview-theme-abyss"}
         components={components}
-        headerComponents={{
-          header: HeaderComponent,
-        }}
+        headerComponents={headerComponents}
         onReady={onReady}
       />
     </div>

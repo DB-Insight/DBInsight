@@ -8,12 +8,15 @@ import Info from "./Info";
 import Structure from "./Structure";
 import Terminal from "./Terminal";
 import styles from "./index.module.css";
+import { useSnapshot } from "valtio";
+import connectionModel from "@/models/connection.model";
 
 export default () => {
+  const { target, table } = useSnapshot(connectionModel.state);
   const state = useReactive<{
     tab: string;
   }>({
-    tab: "content",
+    tab: "console",
   });
   const { ref, height = 300, width = 0 } = useResizeObserver<HTMLDivElement>();
   useEffect(() => {}, [height, width]);
@@ -26,52 +29,61 @@ export default () => {
       >
         <TabsList className="w-full justify-start rounded-none bg-transparent py-1 font-normal">
           <TabsTrigger
-            value="content"
-            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
-          >
-            Content
-          </TabsTrigger>
-          <TabsTrigger
-            value="structure"
-            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
-          >
-            Structure
-          </TabsTrigger>
-          <TabsTrigger
-            value="info"
-            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
-          >
-            Info
-          </TabsTrigger>
-          <TabsTrigger
             value="console"
-            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
+            className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
             Console
           </TabsTrigger>
-          <TabsTrigger
-            value="result"
-            className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
-          >
-            Result
-          </TabsTrigger>
+
+          {target && table && (
+            <>
+              <TabsTrigger
+                value="content"
+                className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
+              >
+                Content
+              </TabsTrigger>
+              <TabsTrigger
+                value="structure"
+                className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
+              >
+                Structure
+              </TabsTrigger>
+              <TabsTrigger
+                value="info"
+                className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
+              >
+                Info
+              </TabsTrigger>
+              <TabsTrigger
+                value="result"
+                className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
+              >
+                Result
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
       </Tabs>
-      <KeepAlive visible={state.tab === "content"}>
-        <Grid />
-      </KeepAlive>
-      <KeepAlive visible={state.tab === "structure"}>
-        <Structure />
-      </KeepAlive>
-      <KeepAlive visible={state.tab === "info"}>
-        <Info />
-      </KeepAlive>
-      <KeepAlive visible={state.tab === "result"}>
-        <Grid />
-      </KeepAlive>
       <KeepAlive visible={state.tab === "console"}>
         <Terminal />
       </KeepAlive>
+      {target && table && (
+        <>
+          <KeepAlive visible={state.tab === "content"}>
+            <Grid />
+          </KeepAlive>
+          <KeepAlive visible={state.tab === "structure"}>
+            <Structure />
+          </KeepAlive>
+          <KeepAlive visible={state.tab === "info"}>
+            <Info />
+          </KeepAlive>
+          <KeepAlive visible={state.tab === "result"}>
+            <Grid />
+          </KeepAlive>
+        </>
+      )}
     </div>
   );
 };

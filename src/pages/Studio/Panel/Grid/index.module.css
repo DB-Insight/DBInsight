@@ -13,6 +13,6 @@
     }
   }
   .footer {
-    @apply flex select-none items-center justify-between pt-1 text-xs text-gray-300;
+    @apply flex select-none items-center justify-between px-1 pt-1 text-xs text-gray-300;
   }
 }

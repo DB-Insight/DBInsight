@@ -1,14 +1,17 @@
 .container {
   @apply box-border flex h-full w-full flex-1 flex-col overflow-y-auto overflow-x-hidden;
-  box-shadow: var(--box-shadow);
+  .filter {
+    @apply relative p-2;
+    box-shadow: var(--box-shadow);
+  }
   .item {
     @apply flex cursor-pointer select-none items-center
-          justify-start gap-1 rounded-none px-4 py-1 hover:bg-slate-700;
+          justify-start gap-2 rounded-none px-4 py-2 hover:bg-slate-700;
     &.active {
       @apply bg-primary;
     }
     .name {
-      @apply line-clamp-1 inline-block select-none text-ellipsis text-nowrap text-sm;
+      @apply line-clamp-1 inline-block select-none text-ellipsis text-nowrap text-xs;
     }
   }
 }

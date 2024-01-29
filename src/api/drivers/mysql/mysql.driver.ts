@@ -53,6 +53,16 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
     }));
   }
 
+  async getEngines() {
+    const res: any = await this.raw(
+      `SELECT Engine, Support FROM \`information_schema\`.\`engines\` WHERE SUPPORT IN ('DEFAULT', 'YES') AND Engine != 'PERFORMANCE_SCHEMA'`,
+    );
+    return res[0].map((o: any) => ({
+      engine: o.Engine,
+      support: o.Support,
+    }));
+  }
+
   async showVariables(name: string) {
     const res: any = await this.raw(`SHOW VARIABLES LIKE '${name}'`);
     return res[0].find((o: any) => o.Variable_name === name)?.Value;

@@ -6,6 +6,7 @@ export interface IDBDriver extends EventEmitter {
   getVersion(): Promise<string>;
   getCharacterSets(): Promise<ICharacterSet[]>;
   getCollations(characterSet: string): Promise<ICollation[]>;
+  getEngines(): Promise<IEngine[]>;
   showVariables(name: string): Promise<string>;
   showDatabases(): Promise<IDatabase[]>;
   showTables(): Promise<ITable[]>;
@@ -93,4 +94,9 @@ export interface ICollation {
   isDefault: string;
   padAttribute: string;
   sortlen: number;
+}
+
+export interface IEngine {
+  engine: string;
+  support: string;
 }

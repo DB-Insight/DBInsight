@@ -227,7 +227,7 @@ export default () => {
                 value={state.pageSize.toString()}
                 onValueChange={(e) => (state.pageSize = Number(e))}
               >
-                <SelectTrigger className="h-6">
+                <SelectTrigger className="h-6 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
