@@ -21,3 +21,14 @@ export const CreateTableSchema = z.object({
   collation: z.string().optional(),
   engine: z.string().optional(),
 });
+
+export const RenameTableSchema = z.object({
+  table: z
+    .string({ required_error: "Table Name is required" })
+    .trim()
+    .min(1, { message: "Table Name is required" }),
+  name: z
+    .string({ required_error: "New Table Name is required" })
+    .trim()
+    .min(1, { message: "New Table Name is required" }),
+});

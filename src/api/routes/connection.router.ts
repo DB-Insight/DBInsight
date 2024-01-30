@@ -7,6 +7,7 @@ import {
   GetCollationSchema,
   QueryTableSchema,
   RawSchema,
+  RenameTableSchema,
   TableSchema,
   VariableSchema,
 } from "@/schemas";
@@ -189,20 +190,6 @@ export const connectionRouter = router({
         return Response.fail(JSON.stringify(err));
       }
     }),
-  queryTable: publicProcedure
-    .input(ConnectionSchema.merge(TableSchema.merge(QueryTableSchema)))
-    .query(async ({ ctx, input }) => {
-      try {
-        const { table, page, pageSize, type, ...connection } = input;
-        const factory = ctx.ioc.get(DBFactory);
-        const db = await factory.create(type, connection);
-        const res = await db.queryTable(table, page, pageSize);
-        return Response.ok(res);
-      } catch (err) {
-        console.error(err);
-        return Response.fail(JSON.stringify(err));
-      }
-    }),
   createDatabase: publicProcedure
     .input(ConnectionSchema.merge(CreateDatabaseSchema))
     .mutation(async ({ ctx, input }) => {
@@ -210,12 +197,7 @@ export const connectionRouter = router({
         const { type, name, encoding, collation, ...connection } = input;
         const factory = ctx.ioc.get(DBFactory);
         const db = await factory.create(type, connection);
-        const res = await db.raw(
-          `CREATE DATABASE \`${name}\` 
-          ${encoding ? `DEFAULT CHARACTER SET = \`${encoding}\`` : ""} 
-          ${collation ? `DEFAULT COLLATE = \`${collation}\`` : ""}`,
-        );
-        return Response.ok(res);
+        return Response.ok(await db.createDatabase(name, encoding, collation));
       } catch (err) {
         console.error(err);
         return Response.fail(JSON.stringify(err));
@@ -229,12 +211,61 @@ export const connectionRouter = router({
           input;
         const factory = ctx.ioc.get(DBFactory);
         const db = await factory.create(type, connection);
-        const res = await db.raw(
-          `CREATE TABLE \`${name}\` (id INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT) 
-          ${encoding ? `DEFAULT CHARACTER SET = \`${encoding}\`` : ""} 
-          ${collation ? `DEFAULT COLLATE = \`${collation}\`` : ""} 
-          ${engine ? `ENGINE = \`${engine}\`` : ""}`,
+        return Response.ok(
+          await db.createTable(name, encoding, collation, engine),
         );
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  renameTable: publicProcedure
+    .input(ConnectionSchema.merge(RenameTableSchema))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { type, table, name, ...connection } = input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        return Response.ok(await db.renameTable(table, name));
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  truncateTable: publicProcedure
+    .input(ConnectionSchema.merge(TableSchema))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { type, table, ...connection } = input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        return Response.ok(await db.truncateTable(table));
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  dropTable: publicProcedure
+    .input(ConnectionSchema.merge(TableSchema))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { type, table, ...connection } = input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        return Response.ok(await db.dropTable(table));
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  queryTable: publicProcedure
+    .input(ConnectionSchema.merge(TableSchema.merge(QueryTableSchema)))
+    .query(async ({ ctx, input }) => {
+      try {
+        const { table, page, pageSize, type, ...connection } = input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        const res = await db.queryTable(table, page, pageSize);
         return Response.ok(res);
       } catch (err) {
         console.error(err);

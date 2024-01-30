@@ -10,6 +10,12 @@ import Terminal from "./Terminal";
 import styles from "./index.module.css";
 import { useSnapshot } from "valtio";
 import connectionModel from "@/models/connection.model";
+import {
+  FileCodeIcon,
+  InfoIcon,
+  TableIcon,
+  TerminalSquareIcon,
+} from "lucide-react";
 
 export default () => {
   const { target, table } = useSnapshot(connectionModel.state);
@@ -32,6 +38,7 @@ export default () => {
             value="console"
             className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
           >
+            <TerminalSquareIcon className="mr-1 h-4 w-4" />
             Console
           </TabsTrigger>
 
@@ -41,25 +48,22 @@ export default () => {
                 value="content"
                 className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
               >
+                <TableIcon className="mr-1 h-4 w-4" />
                 Content
               </TabsTrigger>
               <TabsTrigger
                 value="structure"
                 className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
               >
+                <FileCodeIcon className="mr-1 h-4 w-4" />
                 Structure
               </TabsTrigger>
               <TabsTrigger
                 value="info"
                 className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
               >
+                <InfoIcon className="mr-1 h-4 w-4" />
                 Info
-              </TabsTrigger>
-              <TabsTrigger
-                value="result"
-                className="relative rounded-none border-b-2 border-b-transparent px-4 py-1 text-xs text-muted-foreground shadow-none transition-none focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none "
-              >
-                Result
               </TabsTrigger>
             </>
           )}
@@ -78,9 +82,6 @@ export default () => {
           </KeepAlive>
           <KeepAlive visible={state.tab === "info"}>
             <Info />
-          </KeepAlive>
-          <KeepAlive visible={state.tab === "result"}>
-            <Grid />
           </KeepAlive>
         </>
       )}

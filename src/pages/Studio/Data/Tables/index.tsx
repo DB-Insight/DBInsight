@@ -1,5 +1,13 @@
+import { trpc } from "@/api/client";
 import SearchableSelect from "@/components/SearchableSelect";
 import { Button } from "@/components/ui/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import {
   Dialog,
   DialogContent,
@@ -15,12 +23,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import connectionModel from "@/models/connection.model";
 import { CreateTableSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,14 +30,60 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { useReactive } from "ahooks";
 import { IPaneviewPanelProps } from "dockview";
 import { RotateCwIcon, SearchIcon, TableIcon } from "lucide-react";
+import { useEffect, useRef } from "react";
 import Highlighter from "react-highlight-words";
 import { useForm } from "react-hook-form";
+import { useCopyToClipboard } from "react-use";
 import { toast } from "sonner";
 import { useSnapshot } from "valtio";
 import * as z from "zod";
 import styles from "./index.module.css";
-import { trpc } from "@/api/client";
-import { useEffect } from "react";
+import ConfirmPopover from "@/components/ConfirmPopover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ITable } from "@/api/interfaces";
+
+const InlineEditInput = ({
+  defaultValue,
+  onSave,
+}: {
+  defaultValue: string;
+  onSave: (value: string) => void;
+}) => {
+  const ref = useRef<HTMLInputElement>(null);
+  const state = useReactive({
+    value: defaultValue,
+  });
+  useEffect(() => {
+    if (!!ref.current) {
+      setTimeout(() => {
+        ref.current!.focus();
+      }, 300);
+    }
+  }, [ref.current, defaultValue]);
+  return (
+    <Input
+      ref={ref}
+      className="h-6 w-full text-xs"
+      autoFocus
+      value={state.value}
+      onChange={(e) => {
+        state.value = e.target.value;
+      }}
+      onBlur={() => {
+        onSave(state.value);
+      }}
+    />
+  );
+};
 
 interface TablesProps {
   open: boolean;
@@ -45,12 +93,19 @@ interface TablesProps {
 export default ({
   params: { open, onOpenChange },
 }: IPaneviewPanelProps<TablesProps>) => {
+  const [_, copyToClipboard] = useCopyToClipboard();
   const { target, table, tables, characterSets, collations, engines } =
     useSnapshot(connectionModel.state);
   const state = useReactive<{
     filter: string;
+    editName: string;
+    target: ITable | null;
+    confirmType: string;
   }>({
     filter: "",
+    editName: "",
+    target: null,
+    confirmType: "drop",
   });
 
   const form = useForm<z.infer<typeof CreateTableSchema>>({
@@ -88,7 +143,6 @@ export default ({
         }
       }
     } catch (err: any) {
-      console.log(err);
       const data = JSON.parse(err.message);
       toast.error(`${data[0]?.code}`, {
         description: data[0].message,
@@ -205,6 +259,80 @@ export default ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={!!state.target}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure to{" "}
+              {state.confirmType === "drop" ? "drop" : "truncate"} the table?
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                state.target = null;
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (target && state.target?.name) {
+                  try {
+                    if (state.confirmType === "drop") {
+                      const res = await trpc.connection.dropTable.mutate({
+                        table: state.target?.name,
+                        ...target,
+                      });
+                      if (res.status) {
+                        toast.success("Drop Successfully", {
+                          duration: 2000,
+                        });
+                        await connectionModel.loadTables();
+                        onOpenChange(false);
+                      } else {
+                        const data = JSON.parse(res.data);
+                        toast.error(`${data.code}:${data.errno}`, {
+                          description: data.message,
+                          duration: 2000,
+                        });
+                      }
+                    } else {
+                      const res = await trpc.connection.truncateTable.mutate({
+                        table: state.target?.name,
+                        ...target,
+                      });
+                      if (res.status) {
+                        toast.success("Truncate Successfully", {
+                          duration: 2000,
+                        });
+                        await connectionModel.loadTables();
+                        onOpenChange(false);
+                      } else {
+                        const data = JSON.parse(res.data);
+                        toast.error(`${data.code}:${data.errno}`, {
+                          description: data.message,
+                          duration: 2000,
+                        });
+                      }
+                    }
+                  } catch (err: any) {
+                    const data = JSON.parse(err.message);
+                    toast.error(`${data[0]?.code}`, {
+                      description: data[0].message,
+                      duration: 2000,
+                    });
+                  } finally {
+                    state.target = null;
+                  }
+                }
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className={styles.filter}>
         <SearchIcon className="absolute bottom-0 left-4 top-0 my-auto h-4 w-4 text-gray-500" />
         <Input
@@ -218,28 +346,107 @@ export default ({
       {tables
         .filter((t) => t.name.includes(state.filter))
         .map((t) => (
-          <TooltipProvider key={t.name}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  className={`${styles.item} ${table === t.name ? styles.active : null}`}
-                  onClick={() => {
-                    connectionModel.changeTable(t.name);
-                  }}
-                >
-                  <TableIcon className="h-4 w-4 min-w-4" />
-                  <div className={styles.name}>
+          <ContextMenu key={t.name}>
+            <ContextMenuTrigger asChild>
+              <div
+                className={`${styles.item} ${table === t.name ? styles.active : null}`}
+                onClick={() => {
+                  connectionModel.changeTable(t.name);
+                }}
+              >
+                <TableIcon className="h-4 w-4 min-w-4" />
+                <div className={styles.name}>
+                  {state.editName === t.name ? (
+                    <InlineEditInput
+                      defaultValue={t.name}
+                      onSave={async (value) => {
+                        try {
+                          if (value !== state.editName) {
+                            if (target) {
+                              const res =
+                                await trpc.connection.renameTable.mutate({
+                                  table: t.name,
+                                  name: value,
+                                  ...target,
+                                });
+                              if (res.status) {
+                                toast.success("Rename successfully", {
+                                  duration: 2000,
+                                });
+                                await connectionModel.changeTable(value);
+                                await connectionModel.loadTables();
+                                onOpenChange(false);
+                              } else {
+                                const data = JSON.parse(res.data);
+                                toast.error(`${data.code}:${data.errno}`, {
+                                  description: data.message,
+                                  duration: 2000,
+                                });
+                              }
+                            }
+                          }
+                        } catch (err: any) {
+                          console.log(err);
+                          const data = JSON.parse(err.message);
+                          toast.error(`${data[0]?.code}`, {
+                            description: data[0].message,
+                            duration: 2000,
+                          });
+                        } finally {
+                          state.editName = "";
+                        }
+                      }}
+                    />
+                  ) : (
                     <Highlighter
                       searchWords={[state.filter]}
                       autoEscape={true}
                       textToHighlight={t.name}
+                      onDoubleClick={() => {
+                        state.editName = t.name;
+                      }}
                     />
-                  </div>
+                  )}
                 </div>
-              </TooltipTrigger>
-              <TooltipContent>{t.name}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem
+                onClick={() => {
+                  copyToClipboard(t.name);
+                  toast.success("Copied to clipboard", {
+                    duration: 2000,
+                  });
+                }}
+              >
+                Copy the table name
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => {
+                  state.editName = t.name;
+                }}
+              >
+                Rename the table
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                onClick={() => {
+                  state.target = t;
+                  state.confirmType = "truncate";
+                }}
+              >
+                Truncate the table
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => {
+                  state.target = t;
+                  state.confirmType = "drop";
+                }}
+              >
+                Drop the table
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         ))}
     </div>
   );

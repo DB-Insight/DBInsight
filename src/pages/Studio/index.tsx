@@ -267,7 +267,9 @@ export default () => {
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Databases</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-gray-400">
+                    Databases
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
                     value={target.database ?? ""}
@@ -306,7 +308,12 @@ export default () => {
             </div>
           </div>
           <Allotment className={styles.content} defaultSizes={[25, 75]}>
-            <Allotment.Pane className={styles.side} snap minSize={100}>
+            <Allotment.Pane
+              className={styles.side}
+              snap
+              minSize={200}
+              maxSize={600}
+            >
               <Tabs
                 className="mb-1 text-center"
                 value={state.tab}

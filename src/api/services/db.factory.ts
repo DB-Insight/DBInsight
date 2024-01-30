@@ -37,6 +37,7 @@ export class DBFactory {
     if (type === "mysql") {
       db = new MySQLDriver(params);
       db.on("raw", (sql: string) => {
+        console.log(sql);
         this.main.webContents.send("log", sql);
       });
       await this.cache.set(key, db);

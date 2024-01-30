@@ -18,7 +18,6 @@ import {
   RefreshCcwIcon,
 } from "lucide-react";
 import { useEffect } from "react";
-import { useSnapshot } from "valtio";
 import Tables from "./Tables";
 import styles from "./index.module.css";
 
@@ -27,7 +26,6 @@ const components = {
 };
 
 const TableHeaderComponent = (props: IPaneviewPanelProps<any>) => {
-  const { target } = useSnapshot(connectionModel.state);
   const state = useReactive({
     expanded: props.api.isExpanded,
   });

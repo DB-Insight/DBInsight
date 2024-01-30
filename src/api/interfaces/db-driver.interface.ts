@@ -14,6 +14,20 @@ export interface IDBDriver extends EventEmitter {
   showCreateTable(table: string): Promise<string>;
   showColumns(table: string): Promise<IColumn[]>;
   showIndex(table: string): Promise<IIndex[]>;
+  createDatabase(
+    name: string,
+    encoding?: string,
+    collation?: string,
+  ): Promise<any>;
+  createTable(
+    name: string,
+    encoding?: string,
+    collation?: string,
+    engine?: string,
+  ): Promise<any>;
+  renameTable(table: string, name: string): Promise<any>;
+  truncateTable(table: string): Promise<any>;
+  dropTable(table: string): Promise<any>;
   queryTable(
     table: string,
     page: number,

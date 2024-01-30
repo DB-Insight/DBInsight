@@ -148,6 +148,49 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
     }));
   }
 
+  async createDatabase(
+    name: string,
+    encoding?: string | undefined,
+    collation?: string | undefined,
+  ) {
+    return await this.raw(
+      `CREATE DATABASE \`${name}\` 
+          ${encoding ? `DEFAULT CHARACTER SET = \`${encoding}\`` : ""} 
+          ${collation ? `DEFAULT COLLATE = \`${collation}\`` : ""}`,
+    );
+  }
+  async createTable(
+    name: string,
+    encoding?: string | undefined,
+    collation?: string | undefined,
+    engine?: string | undefined,
+  ) {
+    return await this.raw(
+      `CREATE TABLE \`${this.credentials.database}\`.\`${name}\` (id INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT) 
+          ${encoding ? `DEFAULT CHARACTER SET = \`${encoding}\`` : ""} 
+          ${collation ? `DEFAULT COLLATE = \`${collation}\`` : ""} 
+          ${engine ? `ENGINE = \`${engine}\`` : ""}`,
+    );
+  }
+
+  async renameTable(table: string, name: string) {
+    return await this.raw(
+      `RENAME TABLE \`${this.credentials.database}\`.\`${table}\` TO \`${name}\``,
+    );
+  }
+
+  async truncateTable(table: string) {
+    return await this.raw(
+      `TRUNCATE TABLE \`${this.credentials.database}\`.\`${table}\``,
+    );
+  }
+
+  async dropTable(table: string) {
+    return await this.raw(
+      `DROP TABLE \`${this.credentials.database}\`.\`${table}\``,
+    );
+  }
+
   async queryTable(table: string, page: number, pageSize: number) {
     const columns = await this.showColumns(table);
     const countRes = await this.raw(
