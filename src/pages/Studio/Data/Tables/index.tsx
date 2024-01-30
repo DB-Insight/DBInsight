@@ -289,7 +289,6 @@ export default ({
                           duration: 2000,
                         });
                         await connectionModel.loadTables();
-                        onOpenChange(false);
                       } else {
                         const data = JSON.parse(res.data);
                         toast.error(`${data.code}:${data.errno}`, {
@@ -306,8 +305,6 @@ export default ({
                         toast.success("Truncate Successfully", {
                           duration: 2000,
                         });
-                        await connectionModel.loadTables();
-                        onOpenChange(false);
                       } else {
                         const data = JSON.parse(res.data);
                         toast.error(`${data.code}:${data.errno}`, {

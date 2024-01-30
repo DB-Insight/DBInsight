@@ -1,12 +1,12 @@
 import { IDBDriver } from "@/api/interfaces";
+import { yellow } from "colorette";
 import * as crypto from "crypto";
 import { BrowserWindow } from "electron";
 import { ConnectionOptions as MySQLConnectionOptions } from "mysql2";
+import { highlight } from "sql-highlight";
 import Container, { Service } from "typedi";
 import { CacheService } from ".";
 import { MySQLDriver } from "../drivers";
-import { highlight } from "sql-highlight";
-import { format } from "date-fns";
 
 interface ConnectionOptions {
   mysql: MySQLConnectionOptions;
@@ -39,7 +39,7 @@ export class DBFactory {
     if (type === "mysql") {
       db = new MySQLDriver(params);
       db.on("raw", (sql: string) => {
-        sql = `[SQL] ${highlight(sql)}`;
+        sql = `${yellow("[SQL]")} ${highlight(sql)}`;
         console.log(sql);
         this.main.webContents.send("log", sql);
       });
