@@ -5,6 +5,8 @@ import { ConnectionOptions as MySQLConnectionOptions } from "mysql2";
 import Container, { Service } from "typedi";
 import { CacheService } from ".";
 import { MySQLDriver } from "../drivers";
+import { highlight } from "sql-highlight";
+import { format } from "date-fns";
 
 interface ConnectionOptions {
   mysql: MySQLConnectionOptions;
@@ -37,6 +39,7 @@ export class DBFactory {
     if (type === "mysql") {
       db = new MySQLDriver(params);
       db.on("raw", (sql: string) => {
+        sql = `[SQL] ${highlight(sql)}`;
         console.log(sql);
         this.main.webContents.send("log", sql);
       });

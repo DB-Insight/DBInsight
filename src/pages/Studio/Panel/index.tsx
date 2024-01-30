@@ -25,7 +25,6 @@ export default () => {
     tab: "console",
   });
   const { ref, height = 300, width = 0 } = useResizeObserver<HTMLDivElement>();
-  useEffect(() => {}, [height, width]);
   return (
     <div ref={ref} className={styles.container}>
       <Tabs
@@ -70,7 +69,7 @@ export default () => {
         </TabsList>
       </Tabs>
       <KeepAlive visible={state.tab === "console"}>
-        <Terminal />
+        <Terminal height={height} width={width} />
       </KeepAlive>
       {target && table && (
         <>
