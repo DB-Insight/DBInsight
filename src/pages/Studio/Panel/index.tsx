@@ -1,21 +1,20 @@
 import KeepAlive from "@/components/KeepAlive";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useReactive } from "ahooks";
-import { useEffect } from "react";
-import useResizeObserver from "use-resize-observer";
-import Grid from "./Grid";
-import Info from "./Info";
-import Structure from "./Structure";
-import Terminal from "./Terminal";
-import styles from "./index.module.css";
-import { useSnapshot } from "valtio";
 import connectionModel from "@/models/connection.model";
+import { useReactive } from "ahooks";
 import {
   FileCodeIcon,
   InfoIcon,
   TableIcon,
   TerminalSquareIcon,
 } from "lucide-react";
+import useResizeObserver from "use-resize-observer";
+import { useSnapshot } from "valtio";
+import Grid from "./Grid";
+import Info from "./Info";
+import Structure from "./Structure";
+import Terminal from "./Terminal";
+import styles from "./index.module.css";
 
 export default () => {
   const { target, table } = useSnapshot(connectionModel.state);

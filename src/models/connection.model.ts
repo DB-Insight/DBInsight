@@ -4,6 +4,7 @@ import {
   ICollation,
   IDatabase,
   IEngine,
+  IIndex,
   ITable,
 } from "@/api/interfaces";
 import localForage from "localforage";
@@ -38,6 +39,7 @@ const state = proxy<{
   characterSets: ICharacterSet[];
   collations: ICollation[];
   engines: IEngine[];
+  indexs: IIndex[];
   target: Connection | null;
   table: string;
 }>({
@@ -47,6 +49,7 @@ const state = proxy<{
   characterSets: [],
   collations: [],
   engines: [],
+  indexs: [],
   target: null,
   table: "",
 });
@@ -140,6 +143,17 @@ const actions = {
       const res = await trpc.connection.showTables.query(state.target);
       if (res.status) {
         state.tables = res.data ?? [];
+      }
+    }
+  },
+  loadIndex: async () => {
+    if (state.target && !!state.target?.database && !!state.table) {
+      const res = await trpc.connection.showIndex.query({
+        table: state.table,
+        ...state.target,
+      });
+      if (res.status) {
+        state.indexs = res.data ?? [];
       }
     }
   },

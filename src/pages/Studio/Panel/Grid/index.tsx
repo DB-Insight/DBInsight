@@ -141,8 +141,10 @@ export default () => {
           columnDefs={state.columns}
           defaultColDef={defaultColDef}
           rowSelection="multiple"
+          suppressCellFocus
           suppressScrollOnNewData
           suppressPaginationPanel
+          suppressDragLeaveHidesColumns
           pagination
           paginationPageSize={state.pageSize}
           onRowEditingStarted={(e: RowEditingStartedEvent) => {

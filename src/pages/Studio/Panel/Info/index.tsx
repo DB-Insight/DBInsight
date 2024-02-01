@@ -44,7 +44,7 @@ export default () => {
       {state.status && (
         <>
           <div className="flex justify-between gap-10">
-            <div className="flex min-w-[200px] max-w-[200px]">
+            <div className="flex min-w-[300px] max-w-[300px]">
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
                 Type:
               </div>
@@ -58,7 +58,7 @@ export default () => {
             </div>
           </div>
           <div className="flex justify-between gap-10">
-            <div className="flex min-w-[200px] max-w-[200px]">
+            <div className="flex min-w-[300px] max-w-[300px]">
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
                 Collation:
               </div>
@@ -75,7 +75,7 @@ export default () => {
           </div>
           <Separator className="my-4" />
           <div className="flex justify-between gap-10">
-            <div className="flex min-w-[200px] max-w-[200px]">
+            <div className="flex min-w-[300px] max-w-[300px]">
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
                 Number of rows:
               </div>
@@ -89,7 +89,7 @@ export default () => {
             </div>
           </div>
           <div className="flex justify-between gap-10">
-            <div className="flex min-w-[200px] max-w-[200px]">
+            <div className="flex min-w-[300px] max-w-[300px]">
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
                 Row format:
               </div>
@@ -103,7 +103,7 @@ export default () => {
             </div>
           </div>
           <div className="flex justify-between gap-10">
-            <div className="flex min-w-[200px] max-w-[200px]">
+            <div className="flex min-w-[300px] max-w-[300px]">
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
                 Avg. row length:
               </div>
@@ -117,7 +117,7 @@ export default () => {
             </div>
           </div>
           <div className="flex justify-between gap-10">
-            <div className="flex min-w-[200px] max-w-[200px]">
+            <div className="flex min-w-[300px] max-w-[300px]">
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
                 Auto increment:
               </div>
