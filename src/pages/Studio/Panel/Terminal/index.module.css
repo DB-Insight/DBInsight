@@ -1,5 +1,6 @@
 .container {
   @apply h-full w-full p-1;
+  background: #131722;
   :global(.xterm-rows) {
     font-size: 12px !important;
   }

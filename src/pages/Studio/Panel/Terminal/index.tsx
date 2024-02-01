@@ -50,5 +50,11 @@ export default ({ height, width }: { height: number; width: number }) => {
     }
   }, [fitAddonRef, height, width]);
 
-  return <div className={styles.container} ref={ref} />;
+  return (
+    <div
+      className={styles.container}
+      style={{ height: height - 30, width }}
+      ref={ref}
+    />
+  );
 };
