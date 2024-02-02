@@ -2,10 +2,12 @@ import { trpc } from "@/api/client";
 import {
   ICharacterSet,
   ICollation,
+  IColumn,
   IDatabase,
   IEngine,
   IIndex,
   ITable,
+  ITableStatus,
 } from "@/api/interfaces";
 import localForage from "localforage";
 import SuperJSON from "superjson";
@@ -40,6 +42,9 @@ const state = proxy<{
   collations: ICollation[];
   engines: IEngine[];
   indexs: IIndex[];
+  columns: any[];
+  status: ITableStatus | null;
+  info: string | null;
   target: Connection | null;
   table: string;
 }>({
@@ -50,6 +55,9 @@ const state = proxy<{
   collations: [],
   engines: [],
   indexs: [],
+  columns: [],
+  status: null,
+  info: null,
   target: null,
   table: "",
 });
@@ -154,6 +162,39 @@ const actions = {
       });
       if (res.status) {
         state.indexs = res.data ?? [];
+      }
+    }
+  },
+  showTableStatus: async () => {
+    if (state.target && !!state.target?.database && !!state.table) {
+      const res = await trpc.connection.showTableStatus.query({
+        table: state.table,
+        ...state.target,
+      });
+      if (res) {
+        state.status = res.data;
+      }
+    }
+  },
+  showCreateTable: async () => {
+    if (state.target && !!state.target?.database && !!state.table) {
+      const res = await trpc.connection.showCreateTable.query({
+        table: state.table,
+        ...state.target,
+      });
+      if (res) {
+        state.info = res.data;
+      }
+    }
+  },
+  getColumns: async () => {
+    if (state.target && !!state.target?.database && !!state.table) {
+      const res = await trpc.connection.getColumns.query({
+        table: state.table,
+        ...state.target,
+      });
+      if (res) {
+        state.columns = res.data;
       }
     }
   },

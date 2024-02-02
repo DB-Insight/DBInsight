@@ -162,20 +162,6 @@ export const connectionRouter = router({
         return Response.fail(JSON.stringify(err));
       }
     }),
-  showColumns: publicProcedure
-    .input(ConnectionSchema.merge(TableSchema))
-    .query(async ({ ctx, input }) => {
-      try {
-        const { table, type, ...connection } = input;
-        const factory = ctx.ioc.get(DBFactory);
-        const db = await factory.create(type, connection);
-        const res = await db.showColumns(table);
-        return Response.ok(res);
-      } catch (err) {
-        console.error(err);
-        return Response.fail(JSON.stringify(err));
-      }
-    }),
   showIndex: publicProcedure
     .input(ConnectionSchema.merge(TableSchema))
     .query(async ({ ctx, input }) => {
@@ -266,6 +252,20 @@ export const connectionRouter = router({
         const factory = ctx.ioc.get(DBFactory);
         const db = await factory.create(type, connection);
         const res = await db.queryTable(table, page, pageSize);
+        return Response.ok(res);
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  getColumns: publicProcedure
+    .input(ConnectionSchema.merge(TableSchema))
+    .query(async ({ ctx, input }) => {
+      try {
+        const { table, type, ...connection } = input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        const res = await db.getColumns(table);
         return Response.ok(res);
       } catch (err) {
         console.error(err);

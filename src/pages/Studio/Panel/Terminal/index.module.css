@@ -3,5 +3,6 @@
   background: #131722;
   :global(.xterm-rows) {
     font-size: 12px !important;
+    font-family: FiraCode-Light, Menlo, Consolas, "Courier New", monospace;
   }
 }

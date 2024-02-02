@@ -114,15 +114,18 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
 
   async showColumns(table: string): Promise<IColumn[]> {
     const res: any = await this.raw(
-      `SHOW COLUMNS FROM \`${this.credentials.database}\`.\`${table}\``,
+      `SHOW FULL COLUMNS FROM \`${this.credentials.database}\`.\`${table}\``,
     );
     return res[0].map((o: any) => ({
       field: o.Field,
       type: o.Type,
+      collation: o.Collation,
       null: o.Null,
       key: o.Key,
       default: o.Default,
       extra: o.Extra,
+      privileges: o.Privileges,
+      comment: o.Comment,
     }));
   }
 
@@ -148,6 +151,47 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
     }));
   }
 
+  async getColumns(table: string): Promise<IColumn[]> {
+    const res: any = await this.raw(
+      `SELECT * FROM information_schema.columns WHERE table_schema = '${this.credentials.database}' AND table_name = '${table}'`,
+    );
+    // CHARACTER_MAXIMUM_LENGTH: null;
+    // CHARACTER_OCTET_LENGTH: null;
+    // CHARACTER_SET_NAME: null;
+    // COLLATION_NAME: null;
+    // COLUMN_COMMENT: "";
+    // COLUMN_DEFAULT: null;
+    // COLUMN_KEY: "PRI";
+    // COLUMN_NAME: "id";
+    // COLUMN_TYPE: "int unsigned";
+    // DATA_TYPE: "int";
+    // DATETIME_PRECISION: null;
+    // EXTRA: "auto_increment";
+    // GENERATION_EXPRESSION: "";
+    // IS_NULLABLE: "NO";
+    // NUMERIC_PRECISION: 10;
+    // NUMERIC_SCALE: 0;
+    // ORDINAL_POSITION: 1;
+    // PRIVILEGES: "select,insert,update,references";
+    // SRS_ID: null;
+    // TABLE_CATALOG: "def";
+    // TABLE_NAME: "user";
+    // TABLE_SCHEMA: "test";
+    return res[0].map((o: any) => ({
+      field: o.COLUMN_NAME,
+      type: o.DATA_TYPE,
+      length: o.CHARACTER_MAXIMUM_LENGTH,
+      unsigned: o.COLUMN_TYPE?.includes("unsigned"),
+      collation: o.COLLATION_NAME,
+      null: o.IS_NULLABLE,
+      key: o.COLUMN_KEY,
+      default: o.COLUMN_DEFAULT,
+      extra: o.EXTRA,
+      privileges: o.PRIVILEGES,
+      comment: o.COLUMN_COMMENT,
+    }));
+  }
+
   async createDatabase(
     name: string,
     encoding?: string | undefined,
@@ -159,6 +203,7 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
           ${collation ? `DEFAULT COLLATE = \`${collation}\`` : ""}`,
     );
   }
+
   async createTable(
     name: string,
     encoding?: string | undefined,

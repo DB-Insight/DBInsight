@@ -14,6 +14,7 @@ export interface IDBDriver extends EventEmitter {
   showCreateTable(table: string): Promise<string>;
   showColumns(table: string): Promise<IColumn[]>;
   showIndex(table: string): Promise<IIndex[]>;
+  getColumns(table: string): Promise<IColumn[]>;
   createDatabase(
     name: string,
     encoding?: string,
@@ -70,10 +71,15 @@ export interface ITableStatus {
 export interface IColumn {
   field: string;
   type: string;
+  collation: string;
   null: string;
   key: string;
   default: string;
   extra: string;
+  privileges?: string;
+  comment?: string;
+  length?: number;
+  unsigned?: boolean;
 }
 
 export interface IIndex {
