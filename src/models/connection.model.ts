@@ -7,6 +7,7 @@ import {
   IIndex,
   ITable,
 } from "@/api/interfaces";
+import { getSqlValue } from "@/utils/sql";
 import localForage from "localforage";
 import SuperJSON from "superjson";
 import { proxy } from "valtio";
@@ -106,6 +107,36 @@ const actions = {
   changeTable: (table: string) => {
     state.table = table;
   },
+  raw: async (sql: string) => {
+    if (state.target) {
+      return await trpc.connection.raw.query({
+        ...state.target,
+        sql,
+      });
+    }
+  },
+  insertRaw: async (data: any[]) => {
+    if (state.target && data.length > 0) {
+      const columns = data.map((v) => v.field).join(", ");
+      const values = data.map((v) => getSqlValue(v.value)).join(", ");
+      return await actions.raw(
+        `INSERT INTO \`${state.target.database}\`.\`${state.table}\`(${columns}) VALUES(${values})`,
+      );
+    }
+  },
+  updateRaw: async (data: any[], conditions: any[]) => {
+    if (state.target && data.length > 0 && conditions.length > 0) {
+      const valuesSql = data
+        .map((v) => `${v.field} = ${getSqlValue(v.value)}`)
+        .join(", ");
+      const conditionsSql = conditions
+        .map((v) => `${v.field} = ${getSqlValue(v.value)}`)
+        .join(", ");
+      return await actions.raw(
+        `UPDATE \`${state.target.database}\`.\`${state.table}\` SET ${valuesSql} WHERE ${conditionsSql}`,
+      );
+    }
+  },
   getCharacterSets: async () => {
     if (state.target) {
       const res = await trpc.connection.getCharacterSets.query(state.target);
@@ -201,6 +232,10 @@ subscribeKey(state, "list", async () => {
 
 subscribeKey(state, "table", async () => {
   await localForage.setItem("connection-table", state.table);
+  state.status = state.tables.find((t) => t.tableName === state.table) ?? null;
+});
+
+subscribeKey(state, "tables", async () => {
   state.status = state.tables.find((t) => t.tableName === state.table) ?? null;
 });
 

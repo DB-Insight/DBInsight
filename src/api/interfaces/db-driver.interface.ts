@@ -21,6 +21,7 @@ export interface IDBDriver extends EventEmitter {
     encoding?: string,
     collation?: string,
   ): Promise<any>;
+
   createTable(
     name: string,
     encoding?: string,

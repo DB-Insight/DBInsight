@@ -55,7 +55,7 @@ export default () => {
     total: 0,
     totalPage: 1,
   });
-  const { target, table } = useSnapshot(connectionModel.state);
+  const { target, table, columns } = useSnapshot(connectionModel.state);
   const gridRef = useRef<AgGridReact<any>>(null);
   const defaultColDef = useMemo<ColDef>(() => {
     return {
@@ -164,14 +164,38 @@ export default () => {
   const onRowValueChanged = useCallback(
     async (e: any) => {
       if (!!state.target) {
-        let values = null;
-        if (state.target === "add") {
-          values = compareChanged({}, e.data);
-          return;
-        } else {
-          values = compareChanged(state.target, e.data);
-        }
-        if (!values) {
+        let values: any = null;
+
+        values = compareChanged(
+          state.target === "add" ? {} : state.target,
+          e.data,
+        );
+
+        if (!!values) {
+          const keys = Object.keys(values);
+          const data = columns
+            .filter((c) => c.field && keys.includes(c.field))
+            .map((c) => ({
+              field: c.field,
+              value: values[c.field!],
+            }));
+
+          if (state.target === "add") {
+            await connectionModel.insertRaw(data);
+          } else {
+            const targetKeys = Object.keys(state.target);
+            const conditions = columns
+              .filter(
+                (c) =>
+                  c.field && targetKeys.includes(c.field) && c.key === "PRI",
+              )
+              .map((c) => ({
+                field: c.field,
+                value: state.target[c.field!],
+              }));
+            await connectionModel.updateRaw(data, conditions);
+          }
+          await loadList();
         }
       }
     },
