@@ -119,36 +119,6 @@ export const connectionRouter = router({
         return Response.fail(JSON.stringify(err));
       }
     }),
-  showTables: publicProcedure
-    .input(ConnectionSchema)
-    .query(async ({ ctx, input }) => {
-      if (!input.database) {
-        return Response.fail("Database is required");
-      }
-      try {
-        const { type, ...connection } = input;
-        const factory = ctx.ioc.get(DBFactory);
-        const db = await factory.create(type, connection);
-        return Response.ok(await db.showTables());
-      } catch (err) {
-        console.error(err);
-        return Response.fail(JSON.stringify(err));
-      }
-    }),
-  showTableStatus: publicProcedure
-    .input(ConnectionSchema.merge(TableSchema))
-    .query(async ({ ctx, input }) => {
-      try {
-        const { table, type, ...connection } = input;
-        const factory = ctx.ioc.get(DBFactory);
-        const db = await factory.create(type, connection);
-        const res = await db.showTableStatus(table);
-        return Response.ok(res);
-      } catch (err) {
-        console.error(err);
-        return Response.fail(JSON.stringify(err));
-      }
-    }),
   showCreateTable: publicProcedure
     .input(ConnectionSchema.merge(TableSchema))
     .query(async ({ ctx, input }) => {
@@ -253,6 +223,22 @@ export const connectionRouter = router({
         const db = await factory.create(type, connection);
         const res = await db.queryTable(table, page, pageSize);
         return Response.ok(res);
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  getTables: publicProcedure
+    .input(ConnectionSchema)
+    .query(async ({ ctx, input }) => {
+      if (!input.database) {
+        return Response.fail("Database is required");
+      }
+      try {
+        const { type, ...connection } = input;
+        const factory = ctx.ioc.get(DBFactory);
+        const db = await factory.create(type, connection);
+        return Response.ok(await db.getTables());
       } catch (err) {
         console.error(err);
         return Response.fail(JSON.stringify(err));

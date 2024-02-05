@@ -1,5 +1,15 @@
 import { trpc } from "@/api/client";
+import { ITable } from "@/api/interfaces";
 import SearchableSelect from "@/components/SearchableSelect";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -38,18 +48,6 @@ import { toast } from "sonner";
 import { useSnapshot } from "valtio";
 import * as z from "zod";
 import styles from "./index.module.css";
-import ConfirmPopover from "@/components/ConfirmPopover";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { ITable } from "@/api/interfaces";
 
 const InlineEditInput = ({
   defaultValue,
@@ -132,7 +130,7 @@ export default ({
         if (res.status) {
           form.reset();
           toast.success("Successfully created", { duration: 2000 });
-          await connectionModel.loadTables();
+          await connectionModel.getTables();
           onOpenChange(false);
         } else {
           const data = JSON.parse(res.data);
@@ -277,18 +275,18 @@ export default ({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
-                if (target && state.target?.name) {
+                if (target && state.target?.tableName) {
                   try {
                     if (state.confirmType === "drop") {
                       const res = await trpc.connection.dropTable.mutate({
-                        table: state.target?.name,
+                        table: state.target?.tableName,
                         ...target,
                       });
                       if (res.status) {
                         toast.success("Drop Successfully", {
                           duration: 2000,
                         });
-                        await connectionModel.loadTables();
+                        await connectionModel.getTables();
                       } else {
                         const data = JSON.parse(res.data);
                         toast.error(`${data.code}:${data.errno}`, {
@@ -298,7 +296,7 @@ export default ({
                       }
                     } else {
                       const res = await trpc.connection.truncateTable.mutate({
-                        table: state.target?.name,
+                        table: state.target?.tableName,
                         ...target,
                       });
                       if (res.status) {
@@ -341,28 +339,28 @@ export default ({
         />
       </div>
       {tables
-        .filter((t) => t.name.includes(state.filter))
+        .filter((t) => t.tableName.includes(state.filter))
         .map((t) => (
-          <ContextMenu key={t.name}>
+          <ContextMenu key={t.tableName}>
             <ContextMenuTrigger asChild>
               <div
-                className={`${styles.item} ${table === t.name ? styles.active : null}`}
+                className={`${styles.item} ${table === t.tableName ? styles.active : null}`}
                 onClick={() => {
-                  connectionModel.changeTable(t.name);
+                  connectionModel.changeTable(t.tableName);
                 }}
               >
                 <TableIcon className="h-4 w-4 min-w-4" />
                 <div className={styles.name}>
-                  {state.editName === t.name ? (
+                  {state.editName === t.tableName ? (
                     <InlineEditInput
-                      defaultValue={t.name}
+                      defaultValue={t.tableName}
                       onSave={async (value) => {
                         try {
                           if (value !== state.editName) {
                             if (target) {
                               const res =
                                 await trpc.connection.renameTable.mutate({
-                                  table: t.name,
+                                  table: t.tableName,
                                   name: value,
                                   ...target,
                                 });
@@ -371,7 +369,7 @@ export default ({
                                   duration: 2000,
                                 });
                                 await connectionModel.changeTable(value);
-                                await connectionModel.loadTables();
+                                await connectionModel.getTables();
                                 onOpenChange(false);
                               } else {
                                 const data = JSON.parse(res.data);
@@ -395,14 +393,17 @@ export default ({
                       }}
                     />
                   ) : (
-                    <Highlighter
-                      searchWords={[state.filter]}
-                      autoEscape={true}
-                      textToHighlight={t.name}
-                      onDoubleClick={() => {
-                        state.editName = t.name;
-                      }}
-                    />
+                    <div>
+                      <Highlighter
+                        searchWords={[state.filter]}
+                        autoEscape={true}
+                        textToHighlight={t.tableName}
+                        onDoubleClick={() => {
+                          state.editName = t.tableName;
+                        }}
+                      />
+                      <span className={styles.rows}>{t.tableRows} rows</span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -410,7 +411,7 @@ export default ({
             <ContextMenuContent>
               <ContextMenuItem
                 onClick={() => {
-                  copyToClipboard(t.name);
+                  copyToClipboard(t.tableName);
                   toast.success("Copied to clipboard", {
                     duration: 2000,
                   });
@@ -420,7 +421,7 @@ export default ({
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() => {
-                  state.editName = t.name;
+                  state.editName = t.tableName;
                 }}
               >
                 Rename the table

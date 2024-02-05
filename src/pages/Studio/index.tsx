@@ -96,7 +96,7 @@ export default () => {
   }, [target]);
 
   useEffect(() => {
-    connectionModel.loadTables();
+    connectionModel.getTables();
   }, [target?.database]);
 
   const onSubmit = async (data: z.infer<typeof CreateDatabaseSchema>) => {

@@ -1,4 +1,4 @@
-import { IColumn, IDBDriver, IIndex, ITableStatus } from "@/api/interfaces";
+import { IColumn, IDBDriver, IIndex, ITable } from "@/api/interfaces";
 import EventEmitter from "events";
 import { ConnectionOptions } from "mysql2/promise";
 import { MySQL } from "./mysql";
@@ -38,6 +38,7 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
       maxlen: o.MAXLEN,
     }));
   }
+
   async getCollations(characterSet: string) {
     const res: any = await this.raw(
       `SELECT * FROM \`information_schema\`.\`collations\` WHERE character_set_name = '${characterSet}' ORDER BY \`collation_name\` ASC`,
@@ -63,91 +64,32 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
     }));
   }
 
-  async showVariables(name: string) {
-    const res: any = await this.raw(`SHOW VARIABLES LIKE '${name}'`);
-    return res[0].find((o: any) => o.Variable_name === name)?.Value;
-  }
-
-  async showDatabases() {
-    const res: any = await this.raw(`SHOW DATABASES`);
-    return res[0]?.map((o: any) => ({ name: o["Database"] }));
-  }
-
-  async showTables() {
-    const res: any = await this.raw(`SHOW TABLES`);
-    return res[0]?.map((o: any) => ({
-      name: o[`Tables_in_${this.credentials.database}`],
-    }));
-  }
-
-  async showTableStatus(table: string): Promise<ITableStatus> {
-    const res: any = await this.raw(`SHOW TABLE STATUS LIKE '${table}'`);
-    const status = res[0][0];
-    return {
-      autoIncrement: status.Auto_increment,
-      avgRowLength: status.Avg_row_length,
-      checkTime: status.Check_time,
-      checksum: status.Checksum,
-      collation: status.Collation,
-      comment: status.Comment,
-      createOptions: status.Create_options,
-      createTime: status.Create_time,
-      dataFree: status.Data_free,
-      dataLength: status.Data_length,
-      engine: status.Engine,
-      indexLength: status.Index_length,
-      maxDataLength: status.Max_data_length,
-      name: status.Name,
-      rowFormat: status.Row_format,
-      rows: status.Rows,
-      updateTime: status.Update_time,
-      version: status.Version,
-    };
-  }
-
-  async showCreateTable(table: string) {
+  async getTables(): Promise<ITable[]> {
     const res: any = await this.raw(
-      `SHOW CREATE TABLE \`${this.credentials.database}\`.\`${table}\``,
-    );
-    return res[0][0]["Create Table"];
-  }
-
-  async showColumns(table: string): Promise<IColumn[]> {
-    const res: any = await this.raw(
-      `SHOW FULL COLUMNS FROM \`${this.credentials.database}\`.\`${table}\``,
+      `SELECT * FROM information_schema.tables WHERE table_schema = '${this.credentials.database}'`,
     );
     return res[0].map((o: any) => ({
-      field: o.Field,
-      type: o.Type,
-      collation: o.Collation,
-      null: o.Null,
-      key: o.Key,
-      default: o.Default,
-      extra: o.Extra,
-      privileges: o.Privileges,
-      comment: o.Comment,
-    }));
-  }
-
-  async showIndex(table: string): Promise<IIndex[]> {
-    const res: any = await this.raw(
-      `SHOW INDEX FROM \`${this.credentials.database}\`.\`${table}\``,
-    );
-    return res[0].map((o: any) => ({
-      cardinality: o.Cardinality,
-      collation: o.Collation,
-      columnName: o.Column_name,
-      comment: o.Comment,
-      expression: o.Expression,
-      indexComment: o.Index_comment,
-      indexType: o.Index_type,
-      keyName: o.Key_name,
-      nonUnique: o.Non_unique,
-      packed: o.Packed,
-      seqInIndex: o.Seq_in_index,
-      subPart: o.Sub_part,
-      table: o.Table,
-      visible: o.Visible,
+      tableCatalog: o.TABLE_CATALOG,
+      tableSchema: o.TABLE_SCHEMA,
+      tableName: o.TABLE_NAME,
+      tableType: o.TABLE_TYPE,
+      engine: o.ENGINE,
+      version: o.VERSION,
+      rowFormat: o.ROW_FORMAT,
+      tableRows: o.TABLE_ROWS,
+      avgRowLength: o.AVG_ROW_LENGTH,
+      dataLength: o.DATA_LENGTH,
+      maxDataLength: o.MAX_DATA_LENGTH,
+      indexLength: o.INDEX_LENGTH,
+      dataFree: o.DATA_FREE,
+      autoIncrement: o.AUTO_INCREMENT,
+      createTime: o.CREATE_TIME,
+      updateTime: o.UPDATE_TIME,
+      checkTime: o.CHECK_TIME,
+      tableCollation: o.TABLE_COLLATION,
+      checksum: o.CHECKSUM,
+      createOptions: o.CREATE_OPTIONS,
+      tableComment: o.TABLE_COMMENT,
     }));
   }
 
@@ -189,6 +131,45 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
       extra: o.EXTRA,
       privileges: o.PRIVILEGES,
       comment: o.COLUMN_COMMENT,
+    }));
+  }
+
+  async showVariables(name: string) {
+    const res: any = await this.raw(`SHOW VARIABLES LIKE '${name}'`);
+    return res[0].find((o: any) => o.Variable_name === name)?.Value;
+  }
+
+  async showDatabases() {
+    const res: any = await this.raw(`SHOW DATABASES`);
+    return res[0]?.map((o: any) => ({ name: o["Database"] }));
+  }
+
+  async showCreateTable(table: string) {
+    const res: any = await this.raw(
+      `SHOW CREATE TABLE \`${this.credentials.database}\`.\`${table}\``,
+    );
+    return res[0][0]["Create Table"];
+  }
+
+  async showIndex(table: string): Promise<IIndex[]> {
+    const res: any = await this.raw(
+      `SHOW INDEX FROM \`${this.credentials.database}\`.\`${table}\``,
+    );
+    return res[0].map((o: any) => ({
+      cardinality: o.Cardinality,
+      collation: o.Collation,
+      columnName: o.Column_name,
+      comment: o.Comment,
+      expression: o.Expression,
+      indexComment: o.Index_comment,
+      indexType: o.Index_type,
+      keyName: o.Key_name,
+      nonUnique: o.Non_unique,
+      packed: o.Packed,
+      seqInIndex: o.Seq_in_index,
+      subPart: o.Sub_part,
+      table: o.Table,
+      visible: o.Visible,
     }));
   }
 
@@ -237,7 +218,7 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
   }
 
   async queryTable(table: string, page: number, pageSize: number) {
-    const columns = await this.showColumns(table);
+    const columns = await this.getColumns(table);
     const countRes = await this.raw(
       `SELECT COUNT(1) AS total FROM \`${this.credentials.database}\`.\`${table}\``,
     );

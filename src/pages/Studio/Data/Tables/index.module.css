@@ -12,6 +12,10 @@
     }
     .name {
       @apply line-clamp-1 inline-block select-none text-ellipsis text-nowrap text-xs;
+      .rows {
+        @apply m-2 text-gray-300;
+        font-size: 10px;
+      }
     }
   }
 }

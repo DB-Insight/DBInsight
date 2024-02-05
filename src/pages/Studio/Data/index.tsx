@@ -72,7 +72,7 @@ const TableHeaderComponent = (props: IPaneviewPanelProps<any>) => {
                 className="invisible h-4 w-4 cursor-pointer hover:text-gray-200 group-hover:visible"
                 onClick={(e) => {
                   e.stopPropagation();
-                  connectionModel.loadTables();
+                  connectionModel.getTables();
                 }}
               />
             </TooltipTrigger>

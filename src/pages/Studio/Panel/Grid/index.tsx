@@ -19,13 +19,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import connectionModel from "@/models/connection.model";
-import {
-  CellEditingStartedEvent,
-  CellEditingStoppedEvent,
-  ColDef,
-  RowEditingStartedEvent,
-  RowEditingStoppedEvent,
-} from "@ag-grid-community/core";
+import { compareChanged } from "@/utils/object";
+import { ColDef } from "@ag-grid-community/core";
 import { AgGridReact } from "@ag-grid-community/react";
 import { useReactive } from "ahooks";
 import {
@@ -44,6 +39,7 @@ import styles from "./index.module.css";
 
 export default () => {
   const state = useReactive<{
+    target: any;
     columns: ColDef[];
     rows: any[];
     page: number;
@@ -51,6 +47,7 @@ export default () => {
     total: number;
     totalPage: number;
   }>({
+    target: null,
     rows: [],
     columns: [],
     page: 1,
@@ -85,6 +82,22 @@ export default () => {
     loadList();
   }, [state.page, state.pageSize]);
 
+  useEffect(() => {
+    if (state.target && state.target === "add") {
+      if (!!state.columns[0]) {
+        setTimeout(() => {
+          const rowIndex = state.rows.length - 1;
+          const colKey = state.columns[0].field!;
+          gridRef.current?.api.setFocusedCell(rowIndex, colKey);
+          gridRef.current!.api.startEditingCell({
+            rowIndex,
+            colKey,
+          });
+        }, 300);
+      }
+    }
+  }, [gridRef.current, state.target, state.rows]);
+
   const loadList = useCallback(async () => {
     if (!!target?.database && !!table) {
       const res = await trpc.connection.queryTable.query({
@@ -110,19 +123,16 @@ export default () => {
 
   const gotoFirst = useCallback(() => {
     state.page = 1;
-    // gridRef.current!.api.paginationGoToFirstPage();
   }, [gridRef.current]);
 
   const gotoLast = useCallback(() => {
     state.page = state.totalPage;
-    // gridRef.current!.api.paginationGoToLastPage();
   }, [gridRef.current]);
 
   const gotoNext = useCallback(() => {
     if (state.page < state.totalPage) {
       state.page = state.page + 1;
     }
-    // gridRef.current!.api.paginationGoToNextPage();
   }, [gridRef.current, state.page, state.totalPage]);
 
   const gotoPrevious = useCallback(() => {
@@ -131,6 +141,42 @@ export default () => {
     }
     //gridRef.current!.api.paginationGoToPreviousPage();
   }, [gridRef.current, state.page, state.totalPage]);
+
+  const onRowEditingStarted = useCallback(
+    (e: any) => {
+      if (state.target !== "add") {
+        state.target = { ...e.data };
+      }
+    },
+    [state.target],
+  );
+
+  const onRowEditingStopped = useCallback(
+    (e: any) => {
+      if (state.target === "add") {
+        state.rows = [...state.rows.slice(0, state.rows.length - 1)];
+      }
+      state.target = null;
+    },
+    [state.target],
+  );
+
+  const onRowValueChanged = useCallback(
+    async (e: any) => {
+      if (!!state.target) {
+        let values = null;
+        if (state.target === "add") {
+          values = compareChanged({}, e.data);
+          return;
+        } else {
+          values = compareChanged(state.target, e.data);
+        }
+        if (!values) {
+        }
+      }
+    },
+    [state.target],
+  );
 
   return (
     <div className={styles.container}>
@@ -141,24 +187,17 @@ export default () => {
           columnDefs={state.columns}
           defaultColDef={defaultColDef}
           rowSelection="multiple"
+          editType="fullRow"
+          stopEditingWhenCellsLoseFocus
+          pagination
+          paginationPageSize={state.pageSize}
           suppressCellFocus
           suppressScrollOnNewData
           suppressPaginationPanel
           suppressDragLeaveHidesColumns
-          pagination
-          paginationPageSize={state.pageSize}
-          onRowEditingStarted={(e: RowEditingStartedEvent) => {
-            console.log("never called - not doing row editing");
-          }}
-          onRowEditingStopped={(e: RowEditingStoppedEvent) => {
-            console.log("never called - not doing row editing");
-          }}
-          onCellEditingStarted={(e: CellEditingStartedEvent) => {
-            console.log("cellEditingStarted");
-          }}
-          onCellEditingStopped={(e: CellEditingStoppedEvent) => {
-            console.log("cellEditingStopped");
-          }}
+          onRowEditingStarted={onRowEditingStarted}
+          onRowEditingStopped={onRowEditingStopped}
+          onRowValueChanged={onRowValueChanged}
         />
       </div>
       <div className={styles.footer}>
@@ -170,7 +209,8 @@ export default () => {
                   className="h-3 w-3 cursor-pointer hover:text-foreground"
                   onClick={(e) => {
                     e.stopPropagation();
-                    loadList();
+                    state.rows = [...state.rows.concat([{}])];
+                    state.target = "add";
                   }}
                 />
               </TooltipTrigger>

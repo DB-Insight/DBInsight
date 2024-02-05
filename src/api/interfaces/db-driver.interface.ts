@@ -3,18 +3,19 @@ import EventEmitter from "events";
 export interface IDBDriver extends EventEmitter {
   ping(): Promise<boolean>;
   raw(sql: string): Promise<any>;
+
   getVersion(): Promise<string>;
   getCharacterSets(): Promise<ICharacterSet[]>;
   getCollations(characterSet: string): Promise<ICollation[]>;
   getEngines(): Promise<IEngine[]>;
+  getTables(): Promise<ITable[]>;
+  getColumns(table: string): Promise<IColumn[]>;
+
   showVariables(name: string): Promise<string>;
   showDatabases(): Promise<IDatabase[]>;
-  showTables(): Promise<ITable[]>;
-  showTableStatus(table: string): Promise<ITableStatus>;
   showCreateTable(table: string): Promise<string>;
-  showColumns(table: string): Promise<IColumn[]>;
   showIndex(table: string): Promise<IIndex[]>;
-  getColumns(table: string): Promise<IColumn[]>;
+
   createDatabase(
     name: string,
     encoding?: string,
@@ -44,28 +45,27 @@ export interface IDatabase {
 }
 
 export interface ITable {
-  name: string;
-}
-
-export interface ITableStatus {
-  autoIncrement?: number;
-  avgRowLength?: number;
-  checkTime: Date | null;
-  checksum?: number;
-  collation: string;
-  comment?: string;
-  createOptions: string;
-  createTime: Date;
-  dataFree: number;
-  dataLength: number;
+  tableCatalog: string;
+  tableSchema: string;
+  tableName: string;
+  tableType: string;
   engine: string;
-  indexLength: number;
-  maxDataLength: number;
-  name: string;
-  rowFormat: string;
-  rows: number;
-  updateTime?: Date;
   version: number;
+  rowFormat: string;
+  tableRows: number;
+  avgRowLength: number;
+  dataLength: number;
+  maxDataLength: number;
+  indexLength: number;
+  dataFree: number;
+  autoIncrement: number;
+  createTime: string;
+  updateTime: null | string;
+  checkTime: null | string;
+  tableCollation: string;
+  checksum: null | string;
+  createOptions: string;
+  tableComment: string;
 }
 
 export interface IColumn {
@@ -106,6 +106,7 @@ export interface ICharacterSet {
   description: string;
   maxlen: number;
 }
+
 export interface ICollation {
   characterSetName: string;
   collationName: string;

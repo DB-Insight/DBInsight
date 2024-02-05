@@ -12,7 +12,6 @@ export default () => {
   const { target, table, status, info } = useSnapshot(connectionModel.state);
   useEffect(() => {
     connectionModel.showCreateTable();
-    connectionModel.showTableStatus();
   }, [target, table]);
 
   return (
@@ -38,7 +37,7 @@ export default () => {
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
                 Collation:
               </div>
-              {status.collation}
+              {status.tableCollation}
             </div>
             <div className="flex flex-1">
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
@@ -55,7 +54,7 @@ export default () => {
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
                 Number of rows:
               </div>
-              {status.rows}
+              {status.tableRows}
             </div>
             <div className="flex flex-1">
               <div className="mr-1 min-w-[120px] max-w-[120px] text-right">
@@ -109,12 +108,12 @@ export default () => {
         </>
       )}
       <Separator className="my-4" />
-      {status?.comment && (
+      {status?.tableComment && (
         <div className="flex flex-1 flex-col">
           <div className="text-nowrap">Comments:</div>
           <div className="box-border flex-1">
             <SyntaxHighlighter style={oneDark}>
-              {status?.comment ?? ""}
+              {status?.tableComment ?? ""}
             </SyntaxHighlighter>
           </div>
         </div>

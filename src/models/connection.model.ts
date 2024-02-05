@@ -2,12 +2,10 @@ import { trpc } from "@/api/client";
 import {
   ICharacterSet,
   ICollation,
-  IColumn,
   IDatabase,
   IEngine,
   IIndex,
   ITable,
-  ITableStatus,
 } from "@/api/interfaces";
 import localForage from "localforage";
 import SuperJSON from "superjson";
@@ -43,7 +41,7 @@ const state = proxy<{
   engines: IEngine[];
   indexs: IIndex[];
   columns: any[];
-  status: ITableStatus | null;
+  status: ITable | null;
   info: string | null;
   target: Connection | null;
   table: string;
@@ -137,20 +135,31 @@ const actions = {
       }
     }
   },
+  getTables: async () => {
+    if (state.target && !!state.target?.database) {
+      const res = await trpc.connection.getTables.query(state.target);
+      if (res.status) {
+        state.tables = res.data ?? [];
+      }
+    }
+  },
+  getColumns: async () => {
+    if (state.target && !!state.target?.database && !!state.table) {
+      const res = await trpc.connection.getColumns.query({
+        table: state.table,
+        ...state.target,
+      });
+      if (res) {
+        state.columns = res.data;
+      }
+    }
+  },
   loadDatebases: async () => {
     if (state.target) {
       const res = await trpc.connection.showDatabases.query(state.target);
       if (res.status) {
         state.databases =
           res.data.filter((o: IDatabase) => !SYSTEM_DBS.includes(o.name)) ?? [];
-      }
-    }
-  },
-  loadTables: async () => {
-    if (state.target && !!state.target?.database) {
-      const res = await trpc.connection.showTables.query(state.target);
-      if (res.status) {
-        state.tables = res.data ?? [];
       }
     }
   },
@@ -165,17 +174,6 @@ const actions = {
       }
     }
   },
-  showTableStatus: async () => {
-    if (state.target && !!state.target?.database && !!state.table) {
-      const res = await trpc.connection.showTableStatus.query({
-        table: state.table,
-        ...state.target,
-      });
-      if (res) {
-        state.status = res.data;
-      }
-    }
-  },
   showCreateTable: async () => {
     if (state.target && !!state.target?.database && !!state.table) {
       const res = await trpc.connection.showCreateTable.query({
@@ -184,17 +182,6 @@ const actions = {
       });
       if (res) {
         state.info = res.data;
-      }
-    }
-  },
-  getColumns: async () => {
-    if (state.target && !!state.target?.database && !!state.table) {
-      const res = await trpc.connection.getColumns.query({
-        table: state.table,
-        ...state.target,
-      });
-      if (res) {
-        state.columns = res.data;
       }
     }
   },
@@ -214,6 +201,7 @@ subscribeKey(state, "list", async () => {
 
 subscribeKey(state, "table", async () => {
   await localForage.setItem("connection-table", state.table);
+  state.status = state.tables.find((t) => t.tableName === state.table) ?? null;
 });
 
 export default {

@@ -101,8 +101,6 @@ export default () => {
     connectionModel.getColumns();
   }, [target?.database, table]);
 
-  console.log(columns);
-
   return (
     <div className={styles.container}>
       <div className={`ag-theme-alpine-dark ${styles.grid}`}>
