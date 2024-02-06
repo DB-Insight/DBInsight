@@ -224,7 +224,7 @@ export class MySQLDriver extends EventEmitter implements IDBDriver {
     );
     const total = countRes![0][0]["total"];
     const res: any = await this.raw(
-      `SELECT ${columns.map((c) => c.field).join(",")} FROM \`${this.credentials.database}\`.\`${table}\` LIMIT ${pageSize} OFFSET ${pageSize * (page - 1)}`,
+      `SELECT ${columns.map((c) => c.field).join(", ")} FROM \`${this.credentials.database}\`.\`${table}\` LIMIT ${pageSize} OFFSET ${pageSize * (page - 1)}`,
     );
     const rows = res[0] ?? [];
     return {

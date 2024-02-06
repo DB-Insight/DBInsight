@@ -1,5 +1,4 @@
-import { Response } from "@/api/core";
-import { publicProcedure, router } from "@/api/core/server";
+import { Response, publicProcedure, router } from "@/api/core";
 import {
   ConnectionSchema,
   CreateDatabaseSchema,

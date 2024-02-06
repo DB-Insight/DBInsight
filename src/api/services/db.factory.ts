@@ -14,8 +14,8 @@ interface ConnectionOptions {
 
 @Service()
 export class DBFactory {
-  public readonly cache: CacheService = Container.get(CacheService);
-  public readonly main: BrowserWindow = Container.get("main");
+  private readonly cache: CacheService = Container.get(CacheService);
+  private readonly main: BrowserWindow = Container.get("main");
 
   async create<K extends keyof ConnectionOptions>(
     type: K,

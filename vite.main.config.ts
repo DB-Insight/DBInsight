@@ -13,5 +13,10 @@ export default ({ mode }) => {
       browserField: false,
       mainFields: ["module", "jsnext:main", "jsnext"],
     },
+    build: {
+      rollupOptions: {
+        external: ["fsevents"],
+      },
+    },
   });
 };
