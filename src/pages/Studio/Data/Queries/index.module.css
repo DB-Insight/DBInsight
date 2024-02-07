@@ -6,7 +6,7 @@
   }
   .item {
     @apply flex cursor-pointer select-none
-          items-center justify-start gap-2 rounded-none px-4 py-2 hover:bg-slate-700;
+          items-center justify-start gap-1 rounded-none;
     height: 26px;
     &.active {
       @apply bg-primary;

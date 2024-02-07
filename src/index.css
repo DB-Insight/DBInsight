@@ -1,8 +1,8 @@
 @import url("@/assets/fonts/font.css");
 @import url("@/assets/styles/dockview.css");
+@import url("@/assets/styles/react-complex-tree.css");
 
 @import url("allotment/dist/style.css");
-@import url("react-complex-tree/lib/style.css");
 @import url("xterm/css/xterm.css");
 
 @tailwind base;
@@ -98,32 +98,5 @@
 
     --focus-border: theme("colors.primary.DEFAULT");
     --separator-border: theme("colors.border");
-
-    --rct-color-tree-bg: var(--background);
-    --rct-color-tree-focus-outline: #0366d6;
-
-    --rct-color-focustree-item-selected-bg: var(--background);
-    --rct-color-focustree-item-selected-text: inherit;
-    --rct-color-focustree-item-focused-border: #0366d6;
-    --rct-color-focustree-item-draggingover-bg: #ebf0f4;
-    --rct-color-focustree-item-draggingover-color: inherit;
-
-    --rct-color-nonfocustree-item-selected-bg: var(--primary);
-    --rct-color-nonfocustree-item-selected-text: inherit;
-    --rct-color-nonfocustree-item-focused-border: #dbdbdb;
-
-    --rct-color-search-highlight-bg: #a2aed2;
-    --rct-color-drag-between-line-bg: #0366d6;
-    --rct-color-arrow: #373a3f;
-
-    --rct-item-height: 22px;
-
-    --rct-color-renaming-input-submitbutton-bg: inherit;
-    --rct-color-renaming-input-submitbutton-bg-hover: #0366d6;
-    --rct-color-renaming-input-submitbutton-bg-active: #095fc1;
-
-    --rct-color-renaming-input-submitbutton-text: inherit;
-    --rct-color-renaming-input-submitbutton-text-hover: #ffffff;
-    --rct-color-renaming-input-submitbutton-text-active: #ffffff;
   }
 }

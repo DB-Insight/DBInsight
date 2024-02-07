@@ -1,9 +1,9 @@
-import { BrowserWindow, app } from "electron";
-import Container, { Service } from "typedi";
-import * as path from "path";
-import fs from "fs-extra";
 import chokidar, { FSWatcher } from "chokidar";
+import { BrowserWindow, app } from "electron";
 import fg from "fast-glob";
+import fs from "fs-extra";
+import * as path from "path";
+import Container, { Service } from "typedi";
 
 @Service()
 export class FileService {
@@ -24,16 +24,81 @@ export class FileService {
     });
     this.watcher.on("all", async (event, path) => {
       console.log(event, path);
+
       if (event === "add") {
-        console.log(await this.getAllFiles());
       }
     });
+    this.main.webContents.send("folder-change", this.getRoot(this.dirPath));
   }
 
-  private async getAllFiles() {
-    return await fg.async(this.dirPath + "/**/*.sql", {
-      onlyFiles: false,
-      objectMode: true,
+  private getRoot(path: string) {
+    const files = this.getFiles(path);
+    const children = this.getChildren(path);
+    return {
+      root: {
+        index: "root",
+        data: "root",
+        isFolder: true,
+        canMove: false,
+        canRename: false,
+        children: files.map((files) => files.index),
+      },
+      ...children,
+    };
+  }
+
+  private getChildren(path: string) {
+    const files = this.getFiles(path);
+    let folder: Record<string, any> = {};
+    files.forEach((f) => {
+      if (f.isFolder) {
+        const files = this.getFiles(f.index);
+        const children = this.getChildren(f.index);
+        folder[f.index] = {
+          ...f,
+          children: files.map((files) => files.index),
+        };
+        folder = { ...folder, ...children };
+      } else {
+        folder[f.index] = f;
+      }
     });
+    return folder;
+  }
+
+  private getFiles(path: string, glob: string = "/*/") {
+    return fg
+      .globSync([path + glob, path + "/*.sql"], {
+        onlyFiles: false,
+        objectMode: true,
+        stats: true,
+      })
+      .map((f) => {
+        return {
+          index: f.path,
+          data: f.name,
+          isFolder: f.dirent.isDirectory(),
+          canMove: true,
+          canRename: true,
+          weights: f.name.match(/[^\d]+|\d+/g),
+        };
+      })
+      .sort((a, b) => {
+        let pos = 0;
+        const weightsA = a.weights!;
+        const weightsB = b.weights!;
+        let weightA = weightsA[pos];
+        let weightB = weightsB[pos];
+        while (weightA && weightB) {
+          // @ts-ignore
+          const v = weightA - weightB;
+          if (!isNaN(v) && v !== 0) return v;
+          if (weightA !== weightB) return weightA > weightB ? 1 : -1;
+          pos += 1;
+          weightA = weightsA[pos];
+          weightB = weightsB[pos];
+        }
+        return weightA ? 1 : -1;
+      });
   }
 }

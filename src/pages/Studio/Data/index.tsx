@@ -18,27 +18,13 @@ import {
   RefreshCcwIcon,
 } from "lucide-react";
 import { useEffect } from "react";
+import Queries from "./Queries";
 import Tables from "./Tables";
 import styles from "./index.module.css";
-import fileModel from "@/models/file.model";
 
 const components = {
   tablePanel: Tables,
-  queryPanel: () => {
-    useEffect(() => {
-      fileModel.load();
-
-      const onFileChange = (folder: any) => {
-        console.log(folder);
-      };
-
-      window.API.on("file-change", onFileChange);
-      return () => {
-        window.API.off("file-change", onFileChange);
-      };
-    }, []);
-    return <div>11</div>;
-  },
+  queryPanel: Queries,
 };
 
 const TableHeaderComponent = (props: IPaneviewPanelProps<any>) => {
