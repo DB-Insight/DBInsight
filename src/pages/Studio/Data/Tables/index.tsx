@@ -1,5 +1,6 @@
 import { trpc } from "@/api/client";
 import { ITable } from "@/api/interfaces";
+import InlineEditInput from "@/components/InlineEditInput";
 import SearchableSelect from "@/components/SearchableSelect";
 import {
   AlertDialog,
@@ -40,7 +41,7 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { useReactive } from "ahooks";
 import { IPaneviewPanelProps } from "dockview";
 import { RotateCwIcon, SearchIcon, TableIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Highlighter from "react-highlight-words";
 import { useForm } from "react-hook-form";
 import { useCopyToClipboard } from "react-use";
@@ -48,40 +49,6 @@ import { toast } from "sonner";
 import { useSnapshot } from "valtio";
 import * as z from "zod";
 import styles from "./index.module.css";
-
-const InlineEditInput = ({
-  defaultValue,
-  onSave,
-}: {
-  defaultValue: string;
-  onSave: (value: string) => void;
-}) => {
-  const ref = useRef<HTMLInputElement>(null);
-  const state = useReactive({
-    value: defaultValue,
-  });
-  useEffect(() => {
-    if (!!ref.current) {
-      setTimeout(() => {
-        ref.current!.focus();
-      }, 300);
-    }
-  }, [ref.current, defaultValue]);
-  return (
-    <Input
-      ref={ref}
-      className="h-6 w-full text-xs"
-      autoFocus
-      value={state.value}
-      onChange={(e) => {
-        state.value = e.target.value;
-      }}
-      onBlur={() => {
-        onSave(state.value);
-      }}
-    />
-  );
-};
 
 interface TablesProps {
   open: boolean;

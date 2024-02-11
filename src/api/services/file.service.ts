@@ -2,13 +2,13 @@ import chokidar, { FSWatcher } from "chokidar";
 import { BrowserWindow, app } from "electron";
 import fg from "fast-glob";
 import fs from "fs-extra";
-import * as path from "path";
+import { dirname, join } from "path";
 import Container, { Service } from "typedi";
 
 @Service()
 export class FileService {
   private readonly main: BrowserWindow = Container.get("main");
-  private readonly basePath: string = path.join(
+  private readonly basePath: string = join(
     app.getPath("documents"),
     app.getName(),
   );
@@ -16,7 +16,7 @@ export class FileService {
   private watcher: FSWatcher | null = null;
 
   async init(dirPath: string = "queries") {
-    this.dirPath = path.join(this.basePath, dirPath);
+    this.dirPath = join(this.basePath, dirPath);
     await fs.ensureDir(this.dirPath);
     this.watcher = chokidar.watch(this.dirPath, {
       ignored: /(^|[\/\\])\../,
@@ -27,7 +27,21 @@ export class FileService {
 
       if (event === "add") {
       }
+
+      this.main.webContents.send("folder-change", this.getRoot(this.dirPath));
     });
+  }
+
+  async dirname(path: string) {
+    return dirname(path);
+  }
+
+  async join(paths: string[]) {
+    return join(...paths);
+  }
+
+  async rename(oldPath: string, newPath: string) {
+    await fs.rename(oldPath, newPath);
     this.main.webContents.send("folder-change", this.getRoot(this.dirPath));
   }
 

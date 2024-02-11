@@ -45,23 +45,23 @@ export default () => {
       },
     });
 
-    event.api.addPanel({
-      id: "panel_2",
-      component: "default",
-      tabComponent: "header",
-      params: {
-        title: "Panel 2",
-      },
-    });
+    // event.api.addPanel({
+    //   id: "panel_2",
+    //   component: "default",
+    //   tabComponent: "header",
+    //   params: {
+    //     title: "Panel 2",
+    //   },
+    // });
 
-    event.api.addPanel({
-      id: "panel_3",
-      component: "default",
-      tabComponent: "header",
-      params: {
-        title: "Panel 3",
-      },
-    });
+    // event.api.addPanel({
+    //   id: "panel_3",
+    //   component: "default",
+    //   tabComponent: "header",
+    //   params: {
+    //     title: "Panel 3",
+    //   },
+    // });
   };
   return (
     <DockviewReact
