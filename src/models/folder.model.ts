@@ -1,22 +1,16 @@
 import { trpc } from "@/api/client";
-import {
-  TreeItem,
-  TreeItemIndex,
-  TreeItemRenderContext,
-} from "react-complex-tree";
+import { TreeItem, TreeItemIndex } from "react-complex-tree";
 import { toast } from "sonner";
 import { proxy } from "valtio";
 
 export type Folder = Record<TreeItemIndex, TreeItem<any>>;
 
 const state = proxy<{
-  context: TreeItemRenderContext<never> | null;
   folder: Folder;
   selectedItems?: TreeItemIndex[];
   expandedItems?: TreeItemIndex[];
   focusedItem?: TreeItemIndex;
 }>({
-  context: null,
   folder: {},
   selectedItems: [],
   expandedItems: [],
@@ -26,6 +20,9 @@ const state = proxy<{
 const actions = {
   load: async () => {
     await trpc.file.init.mutate();
+  },
+  reload: async () => {
+    await trpc.file.reload.mutate();
   },
   init: (folder: Folder) => {
     state.folder = folder;
@@ -80,8 +77,49 @@ const actions = {
       });
     }
   },
-  onContextChange: (context: TreeItemRenderContext<never> | null) => {
-    state.context = context;
+  create: async (path: string, isFolder: boolean) => {
+    let basePath = state.focusedItem?.toString() ?? "";
+    if (!!basePath && basePath.endsWith(".sql")) {
+      basePath = await actions.dirname(basePath);
+    }
+    if (!isFolder && !path.endsWith(".sql")) {
+      path = `${path}.sql`;
+    }
+    path = await actions.join([basePath, path]);
+    const res = await trpc.file.create.mutate({
+      path,
+      isFolder,
+    });
+    if (!res.status) {
+      const data = JSON.parse(res.data);
+      toast.error(`${data.code}:${data.errno}`, {
+        description: data.message,
+        duration: 2000,
+      });
+    }
+    return res.data;
+  },
+  delete: async (path: string) => {
+    if (!path) return;
+    try {
+      const res = await trpc.file.delete.mutate({
+        path,
+      });
+      if (!res.status) {
+        const data = JSON.parse(res.data);
+        toast.error(`${data.code}:${data.errno}`, {
+          description: data.message,
+          duration: 2000,
+        });
+      }
+    } catch (err: any) {
+      console.log(err);
+      const data = JSON.parse(err.message);
+      toast.error(`${data[0]?.code}`, {
+        description: data[0].message,
+        duration: 2000,
+      });
+    }
   },
   onFocusItem: (item: any) => {
     state.focusedItem = item.index;

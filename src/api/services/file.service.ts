@@ -1,8 +1,8 @@
 import chokidar, { FSWatcher } from "chokidar";
-import { BrowserWindow, app } from "electron";
+import { BrowserWindow, app, shell } from "electron";
 import fg from "fast-glob";
 import fs from "fs-extra";
-import { dirname, join } from "path";
+import { dirname, isAbsolute, join } from "path";
 import Container, { Service } from "typedi";
 
 @Service()
@@ -32,6 +32,10 @@ export class FileService {
     });
   }
 
+  async reload() {
+    this.main.webContents.send("folder-change", this.getRoot(this.dirPath));
+  }
+
   async dirname(path: string) {
     return dirname(path);
   }
@@ -43,6 +47,22 @@ export class FileService {
   async rename(oldPath: string, newPath: string) {
     await fs.rename(oldPath, newPath);
     this.main.webContents.send("folder-change", this.getRoot(this.dirPath));
+  }
+
+  async create(path: string, isFolder = false) {
+    if (!isAbsolute(path)) {
+      path = join(this.dirPath, path);
+    }
+    if (isFolder) {
+      await fs.mkdir(path);
+    } else {
+      await fs.createFile(path);
+    }
+    return path;
+  }
+
+  async delete(path: string) {
+    return await shell.trashItem(path);
   }
 
   private getRoot(path: string) {
@@ -98,6 +118,8 @@ export class FileService {
         };
       })
       .sort((a, b) => {
+        if (a.isFolder && !b.isFolder) return -1;
+        if (!a.isFolder && b.isFolder) return 1;
         let pos = 0;
         const weightsA = a.weights!;
         const weightsB = b.weights!;

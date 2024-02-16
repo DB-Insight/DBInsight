@@ -7,6 +7,10 @@ export const FileSchema = z.object({
     .min(1, { message: "Path is required" }),
 });
 
+export const CreateFileSchema = z.object({
+  isFolder: z.boolean().default(false),
+});
+
 export const RenameFileSchema = z.object({
   newPath: z
     .string({ required_error: "New Path is required" })

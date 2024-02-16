@@ -1,5 +1,10 @@
 import { Response, publicProcedure, router } from "@/api/core";
-import { FileSchema, JoinFileSchema, RenameFileSchema } from "@/schemas";
+import {
+  CreateFileSchema,
+  FileSchema,
+  JoinFileSchema,
+  RenameFileSchema,
+} from "@/schemas";
 import { FileService } from "../services";
 
 export const fileRouter = router({
@@ -7,6 +12,15 @@ export const fileRouter = router({
     try {
       const fileService = ctx.ioc.get(FileService);
       return Response.ok(await fileService.init());
+    } catch (err) {
+      console.error(err);
+      return Response.fail(JSON.stringify(err));
+    }
+  }),
+  reload: publicProcedure.mutation(async ({ ctx }) => {
+    try {
+      const fileService = ctx.ioc.get(FileService);
+      return Response.ok(await fileService.reload());
     } catch (err) {
       console.error(err);
       return Response.fail(JSON.stringify(err));
@@ -45,4 +59,26 @@ export const fileRouter = router({
         return Response.fail(JSON.stringify(err));
       }
     }),
+  create: publicProcedure
+    .input(FileSchema.merge(CreateFileSchema))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const fileService = ctx.ioc.get(FileService);
+        return Response.ok(
+          await fileService.create(input.path, input.isFolder),
+        );
+      } catch (err) {
+        console.error(err);
+        return Response.fail(JSON.stringify(err));
+      }
+    }),
+  delete: publicProcedure.input(FileSchema).mutation(async ({ ctx, input }) => {
+    try {
+      const fileService = ctx.ioc.get(FileService);
+      return Response.ok(await fileService.delete(input.path));
+    } catch (err) {
+      console.error(err);
+      return Response.fail(JSON.stringify(err));
+    }
+  }),
 });

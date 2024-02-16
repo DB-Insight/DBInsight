@@ -4,18 +4,24 @@
     @apply relative p-2;
     box-shadow: var(--box-shadow);
   }
-  .item {
-    @apply flex cursor-pointer select-none
-          items-center justify-start gap-1 rounded-none;
-    height: 26px;
+  .node {
+    @apply flex items-center;
     &.active {
       @apply bg-primary;
     }
-    .name {
-      @apply line-clamp-1 inline-block select-none text-ellipsis text-nowrap text-xs;
-      .rows {
-        @apply m-2 text-gray-300;
-        font-size: 10px;
+    .item {
+      @apply flex cursor-pointer select-none
+          items-center justify-start gap-1 rounded-none;
+      height: 26px;
+      &.active {
+        @apply bg-primary;
+      }
+      .name {
+        @apply line-clamp-1 inline-block select-none text-ellipsis text-nowrap text-xs;
+        .rows {
+          @apply m-2 text-gray-300;
+          font-size: 10px;
+        }
       }
     }
   }
