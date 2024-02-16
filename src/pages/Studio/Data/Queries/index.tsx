@@ -231,10 +231,6 @@ export default ({
                 }
                 e.stopPropagation();
               }}
-              onContextMenu={(e) => {
-                folderModel.onSelectItems([item.index.toString()]);
-                e.stopPropagation();
-              }}
             >
               <ContextMenu>
                 <ContextMenuTrigger>
@@ -301,10 +297,18 @@ export default ({
                   </div>
                 </ContextMenuTrigger>
                 <ContextMenuContent>
-                  <ContextMenuItem onClick={() => {}}>
+                  <ContextMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
                     Create a new file
                   </ContextMenuItem>
-                  <ContextMenuItem onClick={() => {}}>
+                  <ContextMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
                     Create a new folder
                   </ContextMenuItem>
                   <ContextMenuSeparator />
@@ -316,7 +320,8 @@ export default ({
                     Rename
                   </ContextMenuItem>
                   <ContextMenuItem
-                    onClick={async () => {
+                    onClick={async (e) => {
+                      e.stopPropagation();
                       await folderModel.delete(item.index.toString());
                     }}
                   >
